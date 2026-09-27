@@ -1,37 +1,42 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Monroe County Storm Chase Dashboard</title>
 <style>
-body {
-background: #111;
-color: #eee;
-font-family: Arial, sans-serif;
-text-align: center;
-padding: 20px;
-}
-h1 {
-color: #4fc3f7;
-}
-.section {
-margin: 30px auto;
-max-width: 900px;
-}
-img {
-max-width: 100%;
-border: 2px solid #4fc3f7;
-border-radius: 8px;
-}
-#stats {
-font-size: 1.2em;
-background: #222;
-padding: 15px;
-border-radius: 8px;
-}
-.elevated { color: #ff5252; font-weight: bold; }
-.low { color: #81c784; font-weight: bold; }
+  body {
+    background: #111;
+    color: #eee;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+  }
+  h1 {
+    color: #4fc3f7;
+  }
+  .section {
+    margin: 30px auto;
+    max-width: 900px;
+  }
+  a.radar-link {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 15px 25px;
+    background: #4fc3f7;
+    color: #111;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+  }
+  #stats {
+    font-size: 1.2em;
+    background: #222;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  .elevated { color: #ff5252; font-weight: bold; }
+  .low { color: #81c784; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -39,18 +44,18 @@ border-radius: 8px;
 <h1>Monroe County Storm Chase Dashboard</h1>
 
 <div class="section">
-<h2>Live Radar (La Crosse, WI - ARX)</h2>
-<img src="https://radar.weather.gov/ridge/standard/ARX_loop.gif" alt="Live radar loop">
+  <h2>Live Radar (La Crosse, WI - ARX)</h2>
+  <a class="radar-link" href="https://radar.weather.gov/station/arx/standard" target="_blank">Open Live Radar</a>
 </div>
 
 <div class="section" id="stats">
-<h2>Today's Chase Potential</h2>
-<p id="output">Loading data...</p>
+  <h2>Today's Chase Potential</h2>
+  <p id="output">Loading data...</p>
 </div>
 
 <div class="section">
-<h2>Active Alerts</h2>
-<p id="alerts">Loading alerts...</p>
+  <h2>Active Alerts</h2>
+  <p id="alerts">Loading alerts...</p>
 </div>
 
 <script>
@@ -60,51 +65,51 @@ const CAPE_THRESHOLD = 1500;
 const SHEAR_THRESHOLD = 15;
 
 async function loadWeather() {
-try {
-const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=cape,wind_speed_10m,wind_speed_80m&forecast_days=1&timezone=America%2FChicago`;
-const res = await fetch(url);
-const data = await res.json();
-const hourly = data.hourly;
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=cape,wind_speed_10m,wind_speed_80m&forecast_days=1&timezone=America%2FChicago`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const hourly = data.hourly;
 
-let maxCape = 0;
-let maxShear = 0;
-for (let i = 0; i < hourly.time.length; i++) {
-const cape = hourly.cape[i] || 0;
-const shear = Math.abs((hourly.wind_speed_80m[i] || 0) - (hourly.wind_speed_10m[i] || 0));
-if (cape > maxCape) maxCape = cape;
-if (shear > maxShear) maxShear = shear;
-}
+    let maxCape = 0;
+    let maxShear = 0;
+    for (let i = 0; i < hourly.time.length; i++) {
+      const cape = hourly.cape[i] || 0;
+      const shear = Math.abs((hourly.wind_speed_80m[i] || 0) - (hourly.wind_speed_10m[i] || 0));
+      if (cape > maxCape) maxCape = cape;
+      if (shear > maxShear) maxShear = shear;
+    }
 
-const elevated = maxCape >= CAPE_THRESHOLD && maxShear >= SHEAR_THRESHOLD;
-document.getElementById('output').innerHTML =
-`Peak CAPE: ${Math.round(maxCape)} J/kg<br>Peak Shear: ${maxShear.toFixed(1)} m/s<br>` +
-(elevated
-? `<span class="elevated">Chase Potential: ELEVATED</span>`
-: `<span class="low">Chase Potential: Low</span>`);
-} catch (err) {
-document.getElementById('output').innerText = "Couldn't load weather data.";
-}
+    const elevated = maxCape >= CAPE_THRESHOLD && maxShear >= SHEAR_THRESHOLD;
+    document.getElementById('output').innerHTML =
+      `Peak CAPE: ${Math.round(maxCape)} J/kg<br>Peak Shear: ${maxShear.toFixed(1)} m/s<br>` +
+      (elevated
+        ? `<span class="elevated">Chase Potential: ELEVATED</span>`
+        : `<span class="low">Chase Potential: Low</span>`);
+  } catch (err) {
+    document.getElementById('output').innerText = "Couldn't load weather data.";
+  }
 }
 
 async function loadAlerts() {
-try {
-const zones = ["WIC081","WIC033","WIC063","WIC121","WIC123","WIC059"];
-let allAlerts = [];
-for (const zone of zones) {
-const res = await fetch(`https://api.weather.gov/alerts/active?zone=${zone}`);
-const data = await res.json();
-if (data.features) allAlerts = allAlerts.concat(data.features);
-}
-if (allAlerts.length === 0) {
-document.getElementById('alerts').innerText = "No active alerts right now.";
-} else {
-document.getElementById('alerts').innerHTML = allAlerts
-.map(a => `<strong>${a.properties.event}</strong>: ${a.properties.headline}`)
-.join('<br><br>');
-}
-} catch (err) {
-document.getElementById('alerts').innerText = "Couldn't load alerts.";
-}
+  try {
+    const zones = ["WIC081","WIC033","WIC063","WIC121","WIC123","WIC059"];
+    let allAlerts = [];
+    for (const zone of zones) {
+      const res = await fetch(`https://api.weather.gov/alerts/active?zone=${zone}`);
+      const data = await res.json();
+      if (data.features) allAlerts = allAlerts.concat(data.features);
+    }
+    if (allAlerts.length === 0) {
+      document.getElementById('alerts').innerText = "No active alerts right now.";
+    } else {
+      document.getElementById('alerts').innerHTML = allAlerts
+        .map(a => `<strong>${a.properties.event}</strong>: ${a.properties.headline}`)
+        .join('<br><br>');
+    }
+  } catch (err) {
+    document.getElementById('alerts').innerText = "Couldn't load alerts.";
+  }
 }
 
 loadWeather();
@@ -113,6 +118,3 @@ loadAlerts();
 
 </body>
 </html>
-```
-
-
