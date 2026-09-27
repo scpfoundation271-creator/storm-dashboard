@@ -21,7 +21,6 @@
   }
   a.link-btn {
     display: inline-block;
-    margin-top: 10px;
     margin: 5px;
     padding: 15px 25px;
     background: #4fc3f7;
@@ -84,7 +83,7 @@ const SHEAR_THRESHOLD = 15;
 
 async function loadCurrent() {
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,wind_direction_10m,precipitation&timezone=America%2FChicago`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,wind_direction_10m,precipitation&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago`;
     const res = await fetch(url);
     const data = await res.json();
     const c = data.current;
