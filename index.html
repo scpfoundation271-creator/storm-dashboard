@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Monroe County Storm Chase Dashboard</title>
+<meta http-equiv="refresh" content="300">
 <style>
   body {
     background: #111;
@@ -18,9 +19,10 @@
     margin: 30px auto;
     max-width: 900px;
   }
-  a.radar-link {
+  a.link-btn {
     display: inline-block;
     margin-top: 10px;
+    margin: 5px;
     padding: 15px 25px;
     background: #4fc3f7;
     color: #111;
@@ -29,7 +31,7 @@
     border-radius: 8px;
     font-size: 1.1em;
   }
-  #stats {
+  #stats, #current {
     font-size: 1.2em;
     background: #222;
     padding: 15px;
@@ -37,15 +39,26 @@
   }
   .elevated { color: #ff5252; font-weight: bold; }
   .low { color: #81c784; font-weight: bold; }
+  .updated {
+    font-size: 0.85em;
+    color: #888;
+    margin-top: 40px;
+  }
 </style>
 </head>
 <body>
 
 <h1>Monroe County Storm Chase Dashboard</h1>
+<p class="updated">Page auto-refreshes every 5 minutes</p>
+
+<div class="section" id="current">
+  <h2>Current Conditions</h2>
+  <p id="currentOutput">Loading current conditions...</p>
+</div>
 
 <div class="section">
   <h2>Live Radar (La Crosse, WI - ARX)</h2>
-  <a class="radar-link" href="https://radar.weather.gov/station/arx/standard" target="_blank">Open Live Radar</a>
+  <a class="link-btn" href="https://radar.weather.gov/station/arx/standard" target="_blank">Open Live Radar</a>
 </div>
 
 <div class="section" id="stats">
@@ -58,11 +71,31 @@
   <p id="alerts">Loading alerts...</p>
 </div>
 
+<div class="section">
+  <h2>Storm Reports</h2>
+  <a class="link-btn" href="https://www.spc.noaa.gov/climo/reports/today.html" target="_blank">Open Today's Storm Reports</a>
+</div>
+
 <script>
 const LAT = 43.9;
 const LON = -90.65;
 const CAPE_THRESHOLD = 1500;
 const SHEAR_THRESHOLD = 15;
+
+async function loadCurrent() {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,wind_direction_10m,precipitation&timezone=America%2FChicago`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const c = data.current;
+    document.getElementById('currentOutput').innerHTML =
+      `Temperature: ${Math.round(c.temperature_2m)} degrees F<br>` +
+      `Wind: ${Math.round(c.wind_speed_10m)} mph<br>` +
+      `Precipitation: ${c.precipitation} inches`;
+  } catch (err) {
+    document.getElementById('currentOutput').innerText = "Couldn't load current conditions.";
+  }
+}
 
 async function loadWeather() {
   try {
@@ -112,6 +145,7 @@ async function loadAlerts() {
   }
 }
 
+loadCurrent();
 loadWeather();
 loadAlerts();
 </script>
