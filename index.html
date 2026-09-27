@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Monroe County Storm Chase Dashboard</title>
 <meta http-equiv="refresh" content="300">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   body {
     background: #111;
@@ -43,6 +44,12 @@
     color: #888;
     margin-top: 40px;
   }
+  #radarMap {
+    height: 450px;
+    width: 100%;
+    border: 2px solid #4fc3f7;
+    border-radius: 8px;
+  }
 </style>
 </head>
 <body>
@@ -56,8 +63,9 @@
 </div>
 
 <div class="section">
-  <h2>Live Radar (La Crosse, WI - ARX)</h2>
-  <a class="link-btn" href="https://radar.weather.gov/station/arx/standard" target="_blank">Open Live Radar</a>
+  <h2>Live Radar Map</h2>
+  <div id="radarMap"></div>
+  <p><a class="link-btn" href="https://radar.weather.gov/station/arx/standard" target="_blank">Open Full NWS Radar</a></p>
 </div>
 
 <div class="section" id="stats">
@@ -75,6 +83,7 @@
   <a class="link-btn" href="https://www.spc.noaa.gov/climo/reports/today.html" target="_blank">Open Today's Storm Reports</a>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const LAT = 43.9;
 const LON = -90.65;
@@ -144,9 +153,30 @@ async function loadAlerts() {
   }
 }
 
+async function loadRadarMap() {
+  try {
+    const map = L.map('radarMap', { zoomControl: true }).setView([LAT, LON], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+    const data = await res.json();
+    const frames = data.radar.past;
+    const latestFrame = frames[frames.length - 1];
+
+    L.tileLayer(`https://tilecache.rainviewer.com${latestFrame.path}/256/{z}/{x}/{y}/2/1_1.png`, {
+      opacity: 0.7
+    }).addTo(map);
+  } catch (err) {
+    document.getElementById('radarMap').innerText = "Couldn't load radar map.";
+  }
+}
+
 loadCurrent();
 loadWeather();
 loadAlerts();
+loadRadarMap();
 </script>
 
 </body>
