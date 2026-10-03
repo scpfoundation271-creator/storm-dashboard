@@ -1,3 +1,6 @@
+Here it is again as a plain code block, same as before, but let's try this: once it loads on your screen, click anywhere inside the block first, then use `Ctrl+A` on your keyboard, that should select everything inside it even if the scrollable box only shows part of it visually.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,123 +11,127 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-  * {
-    box-sizing: border-box;
-  }
-  body {
-    background: linear-gradient(160deg, #0b0e14 0%, #10151f 100%);
-    color: #e8ecf1;
-    font-family: 'Inter', Arial, sans-serif;
-    text-align: center;
-    padding: 30px 16px;
-    margin: 0;
-  }
-  h1 {
-    color: #4fc3f7;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-  }
-  .updated {
-    font-size: 0.85em;
-    color: #7a8699;
-    margin-top: 0;
-    margin-bottom: 30px;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-  .card {
-    background: #161c27;
-    border: 1px solid #262e3d;
-    border-radius: 16px;
-    padding: 22px;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.35);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    text-align: center;
-  }
-  .card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 26px rgba(79,195,247,0.15);
-  }
-  .card.wide {
-    grid-column: 1 / -1;
-  }
-  .card h2 {
-    margin-top: 0;
-    font-size: 1.1em;
-    color: #4fc3f7;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-  }
-  .card p {
-    font-size: 1.05em;
-    line-height: 1.6em;
-    color: #dbe2ea;
-  }
-  a.link-btn {
-    display: inline-block;
-    margin: 6px;
-    padding: 13px 24px;
-    background: linear-gradient(135deg, #4fc3f7, #2196f3);
-    color: #0b0e14;
-    font-weight: 600;
-    text-decoration: none;
-    border-radius: 10px;
-    font-size: 1em;
-    transition: opacity 0.2s ease;
-  }
-  a.link-btn:hover {
-    opacity: 0.85;
-  }
-  .elevated { color: #ff6e6e; font-weight: 700; }
-  .low { color: #7ee0a3; font-weight: 700; }
-  #radarMap {
-    height: 420px;
-    width: 100%;
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  #compass {
-    width: 150px;
-    height: 150px;
-    margin: 10px auto;
-    position: relative;
-    border: 2px solid #4fc3f7;
-    border-radius: 50%;
-    background: #0e131c;
-  }
-  #compassArrow {
-    width: 0;
-    height: 0;
-    border-left: 9px solid transparent;
-    border-right: 9px solid transparent;
-    border-bottom: 46px solid #ff6e6e;
-    position: absolute;
-    top: 28px;
-    left: 66px;
-    transform-origin: 50% 90%;
-    transition: transform 0.5s ease;
-  }
-  .compass-label {
-    position: absolute;
-    font-size: 0.8em;
-    font-weight: 700;
-    color: #4fc3f7;
-  }
-  .label-n { top: 4px; left: 50%; transform: translateX(-50%); }
-  .label-s { bottom: 4px; left: 50%; transform: translateX(-50%); }
-  .label-e { right: 6px; top: 50%; transform: translateY(-50%); }
-  .label-w { left: 6px; top: 50%; transform: translateY(-50%); }
-  .label-ne { top: 16px; right: 16px; }
-  .label-nw { top: 16px; left: 16px; }
-  .label-se { bottom: 16px; right: 16px; }
-  .label-sw { bottom: 16px; left: 16px; }
+* {
+box-sizing: border-box;
+}
+body {
+background: linear-gradient(160deg, #0b0e14 0%, #10151f 100%);
+color: #e8ecf1;
+font-family: 'Inter', Arial, sans-serif;
+text-align: center;
+padding: 30px 16px;
+margin: 0;
+}
+h1 {
+color: #4fc3f7;
+font-weight: 800;
+letter-spacing: 0.5px;
+margin-bottom: 4px;
+}
+.updated {
+font-size: 0.85em;
+color: #7a8699;
+margin-top: 0;
+margin-bottom: 30px;
+}
+.grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+gap: 20px;
+max-width: 1100px;
+margin: 0 auto;
+}
+.card {
+background: #161c27;
+border: 1px solid #262e3d;
+border-radius: 16px;
+padding: 22px;
+box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+transition: transform 0.2s ease, box-shadow 0.2s ease;
+text-align: center;
+}
+.card:hover {
+transform: translateY(-3px);
+box-shadow: 0 8px 26px rgba(79,195,247,0.15);
+}
+.card.wide {
+grid-column: 1 / -1;
+}
+.card h2 {
+margin-top: 0;
+font-size: 1.1em;
+color: #4fc3f7;
+font-weight: 600;
+letter-spacing: 0.3px;
+text-transform: uppercase;
+}
+.card p {
+font-size: 1.05em;
+line-height: 1.6em;
+color: #dbe2ea;
+}
+#skyOutput {
+font-size: 1.35em;
+line-height: 1.8em;
+}
+a.link-btn {
+display: inline-block;
+margin: 6px;
+padding: 13px 24px;
+background: linear-gradient(135deg, #4fc3f7, #2196f3);
+color: #0b0e14;
+font-weight: 600;
+text-decoration: none;
+border-radius: 10px;
+font-size: 1em;
+transition: opacity 0.2s ease;
+}
+a.link-btn:hover {
+opacity: 0.85;
+}
+.elevated { color: #ff6e6e; font-weight: 700; }
+.low { color: #7ee0a3; font-weight: 700; }
+#radarMap {
+height: 420px;
+width: 100%;
+border-radius: 12px;
+overflow: hidden;
+}
+#compass {
+width: 150px;
+height: 150px;
+margin: 10px auto;
+position: relative;
+border: 2px solid #4fc3f7;
+border-radius: 50%;
+background: #0e131c;
+}
+#compassArrow {
+width: 0;
+height: 0;
+border-left: 9px solid transparent;
+border-right: 9px solid transparent;
+border-bottom: 46px solid #ff6e6e;
+position: absolute;
+top: 28px;
+left: 66px;
+transform-origin: 50% 90%;
+transition: transform 0.5s ease;
+}
+.compass-label {
+position: absolute;
+font-size: 0.8em;
+font-weight: 700;
+color: #4fc3f7;
+}
+.label-n { top: 4px; left: 50%; transform: translateX(-50%); }
+.label-s { bottom: 4px; left: 50%; transform: translateX(-50%); }
+.label-e { right: 6px; top: 50%; transform: translateY(-50%); }
+.label-w { left: 6px; top: 50%; transform: translateY(-50%); }
+.label-ne { top: 16px; right: 16px; }
+.label-nw { top: 16px; left: 16px; }
+.label-se { bottom: 16px; right: 16px; }
+.label-sw { bottom: 16px; left: 16px; }
 </style>
 </head>
 <body>
@@ -134,53 +141,53 @@
 
 <div class="grid">
 
-  <div class="card">
-    <h2>Current Conditions</h2>
-    <p id="currentOutput">Loading current conditions...</p>
-    <div id="compass">
-      <div id="compassArrow"></div>
-      <span class="compass-label label-n">N</span>
-      <span class="compass-label label-s">S</span>
-      <span class="compass-label label-e">E</span>
-      <span class="compass-label label-w">W</span>
-      <span class="compass-label label-ne">NE</span>
-      <span class="compass-label label-nw">NW</span>
-      <span class="compass-label label-se">SE</span>
-      <span class="compass-label label-sw">SW</span>
-    </div>
-    <p id="windDirLabel"></p>
-  </div>
+<div class="card">
+<h2>Current Conditions</h2>
+<p id="currentOutput">Loading current conditions...</p>
+<div id="compass">
+<div id="compassArrow"></div>
+<span class="compass-label label-n">N</span>
+<span class="compass-label label-s">S</span>
+<span class="compass-label label-e">E</span>
+<span class="compass-label label-w">W</span>
+<span class="compass-label label-ne">NE</span>
+<span class="compass-label label-nw">NW</span>
+<span class="compass-label label-se">SE</span>
+<span class="compass-label label-sw">SW</span>
+</div>
+<p id="windDirLabel"></p>
+</div>
 
-  <div class="card">
-    <h2>Sky Info</h2>
-    <p id="skyOutput">Loading sky info...</p>
-  </div>
+<div class="card">
+<h2>Sky Info</h2>
+<p id="skyOutput">Loading sky info...</p>
+</div>
 
-  <div class="card">
-    <h2>Chase Potential</h2>
-    <p id="output">Loading data...</p>
-  </div>
+<div class="card">
+<h2>Chase Potential</h2>
+<p id="output">Loading data...</p>
+</div>
 
-  <div class="card wide">
-    <h2>Live Radar Map</h2>
-    <div id="radarMap"></div>
-    <p><a class="link-btn" href="https://radar.weather.gov/station/arx/standard" target="_blank">Open Full NWS Radar</a></p>
-  </div>
+<div class="card wide">
+<h2>Live Radar Map</h2>
+<div id="radarMap"></div>
+<p><a class="link-btn" href="https://radar.weather.gov/station/arx/standard" target="_blank">Open Full NWS Radar</a></p>
+</div>
 
-  <div class="card wide">
-    <h2>Active Alerts</h2>
-    <p id="alerts">Loading alerts...</p>
-  </div>
+<div class="card wide">
+<h2>Active Alerts</h2>
+<p id="alerts">Loading alerts...</p>
+</div>
 
-  <div class="card">
-    <h2>Storm Reports</h2>
-    <a class="link-btn" href="https://www.spc.noaa.gov/climo/reports/today.html" target="_blank">Open Today's Storm Reports</a>
-  </div>
+<div class="card">
+<h2>Storm Reports</h2>
+<a class="link-btn" href="https://www.spc.noaa.gov/climo/reports/today.html" target="_blank">Open Today's Storm Reports</a>
+</div>
 
-  <div class="card">
-    <h2>Live Lightning Map</h2>
-    <a class="link-btn" href="https://www.lightningmaps.org/" target="_blank">Open Live Lightning Map</a>
-  </div>
+<div class="card">
+<h2>Live Lightning Map</h2>
+<a class="link-btn" href="https://www.lightningmaps.org/" target="_blank">Open Live Lightning Map</a>
+</div>
 
 </div>
 
@@ -192,125 +199,125 @@ const CAPE_THRESHOLD = 1500;
 const SHEAR_THRESHOLD = 15;
 
 async function loadCurrent() {
-  try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,wind_direction_10m,precipitation&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago`;
-    const res = await fetch(url);
-    const data = await res.json();
-    const c = data.current;
-    document.getElementById('currentOutput').innerHTML =
-      `Temperature: ${Math.round(c.temperature_2m)} degrees F<br>` +
-      `Wind: ${Math.round(c.wind_speed_10m)} mph<br>` +
-      `Precipitation: ${c.precipitation} inches`;
+try {
+const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,wind_direction_10m,precipitation&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago`;
+const res = await fetch(url);
+const data = await res.json();
+const c = data.current;
+document.getElementById('currentOutput').innerHTML =
+`Temperature: ${Math.round(c.temperature_2m)} degrees F<br>` +
+`Wind: ${Math.round(c.wind_speed_10m)} mph<br>` +
+`Precipitation: ${c.precipitation} inches`;
 
-    const dir = c.wind_direction_10m;
-    document.getElementById('compassArrow').style.transform = `rotate(${dir}deg)`;
-    const dirs = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
-    const dirName = dirs[Math.round(dir / 22.5) % 16];
-    document.getElementById('windDirLabel').innerText = `Wind from ${dirName} (${Math.round(dir)} degrees)`;
-  } catch (err) {
-    document.getElementById('currentOutput').innerText = "Couldn't load current conditions.";
-  }
+const dir = c.wind_direction_10m;
+document.getElementById('compassArrow').style.transform = `rotate(${dir}deg)`;
+const dirs = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+const dirName = dirs[Math.round(dir / 22.5) % 16];
+document.getElementById('windDirLabel').innerText = `Wind from ${dirName} (${Math.round(dir)} degrees)`;
+} catch (err) {
+document.getElementById('currentOutput').innerText = "Couldn't load current conditions.";
+}
 }
 
 async function loadSkyInfo() {
-  try {
-    const url = `https://api.sunrise-sunset.org/json?lat=${LAT}&lng=${LON}&formatted=0`;
-    const res = await fetch(url);
-    const data = await res.json();
-    const sunrise = new Date(data.results.sunrise).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
-    const sunset = new Date(data.results.sunset).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
+try {
+const url = `https://api.sunrise-sunset.org/json?lat=${LAT}&lng=${LON}&formatted=0`;
+const res = await fetch(url);
+const data = await res.json();
+const sunrise = new Date(data.results.sunrise).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
+const sunset = new Date(data.results.sunset).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
 
-    const moonPhase = getMoonPhase();
+const moonPhase = getMoonPhase();
 
-    document.getElementById('skyOutput').innerHTML =
-      `Sunrise: ${sunrise}<br>Sunset: ${sunset}<br>Moon Phase: ${moonPhase}`;
-  } catch (err) {
-    document.getElementById('skyOutput').innerText = "Couldn't load sky info.";
-  }
+document.getElementById('skyOutput').innerHTML =
+`Sunrise: ${sunrise}<br>Sunset: ${sunset}<br>Moon Phase: ${moonPhase}`;
+} catch (err) {
+document.getElementById('skyOutput').innerText = "Couldn't load sky info.";
+}
 }
 
 function getMoonPhase() {
-  const knownNewMoon = new Date("2000-01-06T18:14:00Z").getTime();
-  const lunarCycle = 29.53058867 * 24 * 60 * 60 * 1000;
-  const now = new Date().getTime();
-  const phase = ((now - knownNewMoon) % lunarCycle) / lunarCycle;
+const knownNewMoon = new Date("2000-01-06T18:14:00Z").getTime();
+const lunarCycle = 29.53058867 * 24 * 60 * 60 * 1000;
+const now = new Date().getTime();
+const phase = ((now - knownNewMoon) % lunarCycle) / lunarCycle;
 
-  if (phase < 0.03 || phase > 0.97) return "New Moon";
-  if (phase < 0.22) return "Waxing Crescent";
-  if (phase < 0.28) return "First Quarter";
-  if (phase < 0.47) return "Waxing Gibbous";
-  if (phase < 0.53) return "Full Moon";
-  if (phase < 0.72) return "Waning Gibbous";
-  if (phase < 0.78) return "Last Quarter";
-  return "Waning Crescent";
+if (phase < 0.03 || phase > 0.97) return "New Moon";
+if (phase < 0.22) return "Waxing Crescent";
+if (phase < 0.28) return "First Quarter";
+if (phase < 0.47) return "Waxing Gibbous";
+if (phase < 0.53) return "Full Moon";
+if (phase < 0.72) return "Waning Gibbous";
+if (phase < 0.78) return "Last Quarter";
+return "Waning Crescent";
 }
 
 async function loadWeather() {
-  try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=cape,wind_speed_10m,wind_speed_80m&forecast_days=1&timezone=America%2FChicago`;
-    const res = await fetch(url);
-    const data = await res.json();
-    const hourly = data.hourly;
+try {
+const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=cape,wind_speed_10m,wind_speed_80m&forecast_days=1&timezone=America%2FChicago`;
+const res = await fetch(url);
+const data = await res.json();
+const hourly = data.hourly;
 
-    let maxCape = 0;
-    let maxShear = 0;
-    for (let i = 0; i < hourly.time.length; i++) {
-      const cape = hourly.cape[i] || 0;
-      const shear = Math.abs((hourly.wind_speed_80m[i] || 0) - (hourly.wind_speed_10m[i] || 0));
-      if (cape > maxCape) maxCape = cape;
-      if (shear > maxShear) maxShear = shear;
-    }
+let maxCape = 0;
+let maxShear = 0;
+for (let i = 0; i < hourly.time.length; i++) {
+const cape = hourly.cape[i] || 0;
+const shear = Math.abs((hourly.wind_speed_80m[i] || 0) - (hourly.wind_speed_10m[i] || 0));
+if (cape > maxCape) maxCape = cape;
+if (shear > maxShear) maxShear = shear;
+}
 
-    const elevated = maxCape >= CAPE_THRESHOLD && maxShear >= SHEAR_THRESHOLD;
-    document.getElementById('output').innerHTML =
-      `Peak CAPE: ${Math.round(maxCape)} J/kg<br>Peak Shear: ${maxShear.toFixed(1)} m/s<br>` +
-      (elevated
-        ? `<span class="elevated">Chase Potential: ELEVATED</span>`
-        : `<span class="low">Chase Potential: Low</span>`);
-  } catch (err) {
-    document.getElementById('output').innerText = "Couldn't load weather data.";
-  }
+const elevated = maxCape >= CAPE_THRESHOLD && maxShear >= SHEAR_THRESHOLD;
+document.getElementById('output').innerHTML =
+`Peak CAPE: ${Math.round(maxCape)} J/kg<br>Peak Shear: ${maxShear.toFixed(1)} m/s<br>` +
+(elevated
+? `<span class="elevated">Chase Potential: ELEVATED</span>`
+: `<span class="low">Chase Potential: Low</span>`);
+} catch (err) {
+document.getElementById('output').innerText = "Couldn't load weather data.";
+}
 }
 
 async function loadAlerts() {
-  try {
-    const zones = ["WIC081","WIC033","WIC063","WIC121","WIC123","WIC059"];
-    let allAlerts = [];
-    for (const zone of zones) {
-      const res = await fetch(`https://api.weather.gov/alerts/active?zone=${zone}`);
-      const data = await res.json();
-      if (data.features) allAlerts = allAlerts.concat(data.features);
-    }
-    if (allAlerts.length === 0) {
-      document.getElementById('alerts').innerText = "No active alerts right now.";
-    } else {
-      document.getElementById('alerts').innerHTML = allAlerts
-        .map(a => `<strong>${a.properties.event}</strong>: ${a.properties.headline}`)
-        .join('<br><br>');
-    }
-  } catch (err) {
-    document.getElementById('alerts').innerText = "Couldn't load alerts.";
-  }
+try {
+const zones = ["WIC081","WIC033","WIC063","WIC121","WIC123","WIC059"];
+let allAlerts = [];
+for (const zone of zones) {
+const res = await fetch(`https://api.weather.gov/alerts/active?zone=${zone}`);
+const data = await res.json();
+if (data.features) allAlerts = allAlerts.concat(data.features);
+}
+if (allAlerts.length === 0) {
+document.getElementById('alerts').innerText = "No active alerts right now.";
+} else {
+document.getElementById('alerts').innerHTML = allAlerts
+.map(a => `<strong>${a.properties.event}</strong>: ${a.properties.headline}`)
+.join('<br><br>');
+}
+} catch (err) {
+document.getElementById('alerts').innerText = "Couldn't load alerts.";
+}
 }
 
 async function loadRadarMap() {
-  try {
-    const map = L.map('radarMap', { zoomControl: true }).setView([LAT, LON], 7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+try {
+const map = L.map('radarMap', { zoomControl: true }).setView([LAT, LON], 7);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
 
-    const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-    const data = await res.json();
-    const frames = data.radar.past;
-    const latestFrame = frames[frames.length - 1];
+const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+const data = await res.json();
+const frames = data.radar.past;
+const latestFrame = frames[frames.length - 1];
 
-    L.tileLayer(`https://tilecache.rainviewer.com${latestFrame.path}/256/{z}/{x}/{y}/2/1_1.png`, {
-      opacity: 0.7
-    }).addTo(map);
-  } catch (err) {
-    document.getElementById('radarMap').innerText = "Couldn't load radar map.";
-  }
+L.tileLayer(`https://tilecache.rainviewer.com${latestFrame.path}/256/{z}/{x}/{y}/2/1_1.png`, {
+opacity: 0.7
+}).addTo(map);
+} catch (err) {
+document.getElementById('radarMap').innerText = "Couldn't load radar map.";
+}
 }
 
 loadCurrent();
@@ -322,3 +329,4 @@ loadRadarMap();
 
 </body>
 </html>
+```
