@@ -1,4 +1,4 @@
-Here it is again as a plain code block, same as before, but let's try this: once it loads on your screen, click anywhere inside the block first, then use `Ctrl+A` on your keyboard, that should select everything inside it even if the scrollable box only shows part of it visually.
+Done — I made the compass circle bigger and moved the direction letters outside the circle instead of on top of it, so there's no more overlap. Here's the full file to paste in, same as always.
 
 ```html
 <!DOCTYPE html>
@@ -98,8 +98,8 @@ border-radius: 12px;
 overflow: hidden;
 }
 #compass {
-width: 150px;
-height: 150px;
+width: 210px;
+height: 210px;
 margin: 10px auto;
 position: relative;
 border: 2px solid #4fc3f7;
@@ -111,10 +111,10 @@ width: 0;
 height: 0;
 border-left: 9px solid transparent;
 border-right: 9px solid transparent;
-border-bottom: 46px solid #ff6e6e;
+border-bottom: 56px solid #ff6e6e;
 position: absolute;
-top: 28px;
-left: 66px;
+top: 48px;
+left: 96px;
 transform-origin: 50% 90%;
 transition: transform 0.5s ease;
 }
@@ -124,14 +124,14 @@ font-size: 0.8em;
 font-weight: 700;
 color: #4fc3f7;
 }
-.label-n { top: 4px; left: 50%; transform: translateX(-50%); }
-.label-s { bottom: 4px; left: 50%; transform: translateX(-50%); }
-.label-e { right: 6px; top: 50%; transform: translateY(-50%); }
-.label-w { left: 6px; top: 50%; transform: translateY(-50%); }
-.label-ne { top: 16px; right: 16px; }
-.label-nw { top: 16px; left: 16px; }
-.label-se { bottom: 16px; right: 16px; }
-.label-sw { bottom: 16px; left: 16px; }
+.label-n { top: -22px; left: 50%; transform: translateX(-50%); }
+.label-s { bottom: -22px; left: 50%; transform: translateX(-50%); }
+.label-e { right: -26px; top: 50%; transform: translateY(-50%); }
+.label-w { left: -26px; top: 50%; transform: translateY(-50%); }
+.label-ne { top: -6px; right: -6px; }
+.label-nw { top: -6px; left: -6px; }
+.label-se { bottom: -6px; right: -6px; }
+.label-sw { bottom: -6px; left: -6px; }
 </style>
 </head>
 <body>
