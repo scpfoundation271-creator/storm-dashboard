@@ -6,68 +6,84 @@
 <meta http-equiv="refresh" content="300">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-  body {
-    background: #111;
-    color: #eee;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    padding: 20px;
-  }
-  h1 {
-    color: #4fc3f7;
-  }
-  .section {
-    margin: 30px auto;
-    max-width: 900px;
-  }
-  a.link-btn {
-    display: inline-block;
-    margin: 5px;
-    padding: 15px 25px;
-    background: #4fc3f7;
-    color: #111;
-    font-weight: bold;
-    text-decoration: none;
-    border-radius: 8px;
-    font-size: 1.1em;
-  }
-  #stats, #current, #skyinfo {
-    font-size: 1.2em;
-    background: #222;
-    padding: 15px;
-    border-radius: 8px;
-  }
-  .elevated { color: #ff5252; font-weight: bold; }
-  .low { color: #81c784; font-weight: bold; }
-  .updated {
-    font-size: 0.85em;
-    color: #888;
-    margin-top: 40px;
-  }
-  #radarMap {
-    height: 450px;
-    width: 100%;
-    border: 2px solid #4fc3f7;
-    border-radius: 8px;
-  }
-  #compass {
-    width: 120px;
-    height: 120px;
-    margin: 15px auto;
-    position: relative;
-  }
-  #compassArrow {
-    width: 0;
-    height: 0;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-bottom: 50px solid #ff5252;
-    position: absolute;
-    top: 10px;
-    left: 50px;
-    transform-origin: 50% 90%;
-    transition: transform 0.5s ease;
-  }
+body {
+background: #111;
+color: #eee;
+font-family: Arial, sans-serif;
+text-align: center;
+padding: 20px;
+}
+h1 {
+color: #4fc3f7;
+}
+.section {
+margin: 30px auto;
+max-width: 900px;
+}
+a.link-btn {
+display: inline-block;
+margin: 5px;
+padding: 15px 25px;
+background: #4fc3f7;
+color: #111;
+font-weight: bold;
+text-decoration: none;
+border-radius: 8px;
+font-size: 1.1em;
+}
+#stats, #current, #skyinfo {
+font-size: 1.2em;
+background: #222;
+padding: 15px;
+border-radius: 8px;
+}
+.elevated { color: #ff5252; font-weight: bold; }
+.low { color: #81c784; font-weight: bold; }
+.updated {
+font-size: 0.85em;
+color: #888;
+margin-top: 40px;
+}
+#radarMap {
+height: 450px;
+width: 100%;
+border: 2px solid #4fc3f7;
+border-radius: 8px;
+}
+#compass {
+width: 160px;
+height: 160px;
+margin: 15px auto;
+position: relative;
+border: 2px solid #4fc3f7;
+border-radius: 50%;
+}
+#compassArrow {
+width: 0;
+height: 0;
+border-left: 10px solid transparent;
+border-right: 10px solid transparent;
+border-bottom: 50px solid #ff5252;
+position: absolute;
+top: 30px;
+left: 70px;
+transform-origin: 50% 90%;
+transition: transform 0.5s ease;
+}
+.compass-label {
+position: absolute;
+font-size: 0.85em;
+font-weight: bold;
+color: #4fc3f7;
+}
+.label-n { top: 2px; left: 50%; transform: translateX(-50%); }
+.label-s { bottom: 2px; left: 50%; transform: translateX(-50%); }
+.label-e { right: 4px; top: 50%; transform: translateY(-50%); }
+.label-w { left: 4px; top: 50%; transform: translateY(-50%); }
+.label-ne { top: 18px; right: 18px; }
+.label-nw { top: 18px; left: 18px; }
+.label-se { bottom: 18px; right: 18px; }
+.label-sw { bottom: 18px; left: 18px; }
 </style>
 </head>
 <body>
@@ -76,43 +92,51 @@
 <p class="updated">Page auto-refreshes every 5 minutes</p>
 
 <div class="section" id="current">
-  <h2>Current Conditions</h2>
-  <p id="currentOutput">Loading current conditions...</p>
-  <div id="compass">
-    <div id="compassArrow"></div>
-  </div>
-  <p id="windDirLabel"></p>
+<h2>Current Conditions</h2>
+<p id="currentOutput">Loading current conditions...</p>
+<div id="compass">
+<div id="compassArrow"></div>
+<span class="compass-label label-n">N</span>
+<span class="compass-label label-s">S</span>
+<span class="compass-label label-e">E</span>
+<span class="compass-label label-w">W</span>
+<span class="compass-label label-ne">NE</span>
+<span class="compass-label label-nw">NW</span>
+<span class="compass-label label-se">SE</span>
+<span class="compass-label label-sw">SW</span>
+</div>
+<p id="windDirLabel"></p>
 </div>
 
 <div class="section" id="skyinfo">
-  <h2>Sky Info</h2>
-  <p id="skyOutput">Loading sky info...</p>
+<h2>Sky Info</h2>
+<p id="skyOutput">Loading sky info...</p>
 </div>
 
 <div class="section">
-  <h2>Live Radar Map</h2>
-  <div id="radarMap"></div>
-  <p><a class="link-btn" href="https://radar.weather.gov/station/arx/standard" target="_blank">Open Full NWS Radar</a></p>
+<h2>Live Radar Map</h2>
+<div id="radarMap"></div>
+<p><a class="link-btn" href="https://radar.weather.gov/station/arx/standard" target="_blank">Open Full NWS Radar</a></p>
 </div>
 
 <div class="section" id="stats">
-  <h2>Today's Chase Potential</h2>
-  <p id="output">Loading data...</p>
+<h2>Today's Chase Potential</h2>
+<p id="output">Loading data...</p>
+</div>
+
+<div class="section" id="alerts">
+<h2>Active Alerts</h2>
+<p id="alerts">Loading alerts...</p>
 </div>
 
 <div class="section">
-  <h2>Active Alerts</h2>
-  <p id="alerts">Loading alerts...</p>
+<h2>Storm Reports</h2>
+<a class="link-btn" href="https://www.spc.noaa.gov/climo/reports/today.html" target="_blank">Open Today's Storm Reports</a>
 </div>
 
 <div class="section">
-  <h2>Storm Reports</h2>
-  <a class="link-btn" href="https://www.spc.noaa.gov/climo/reports/today.html" target="_blank">Open Today's Storm Reports</a>
-</div>
-
-<div class="section">
-  <h2>Live Lightning Map</h2>
-  <a class="link-btn" href="https://www.lightningmaps.org/" target="_blank">Open Live Lightning Map</a>
+<h2>Live Lightning Map</h2>
+<a class="link-btn" href="https://www.lightningmaps.org/" target="_blank">Open Live Lightning Map</a>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -123,125 +147,125 @@ const CAPE_THRESHOLD = 1500;
 const SHEAR_THRESHOLD = 15;
 
 async function loadCurrent() {
-  try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,wind_direction_10m,precipitation&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago`;
-    const res = await fetch(url);
-    const data = await res.json();
-    const c = data.current;
-    document.getElementById('currentOutput').innerHTML =
-      `Temperature: ${Math.round(c.temperature_2m)} degrees F<br>` +
-      `Wind: ${Math.round(c.wind_speed_10m)} mph<br>` +
-      `Precipitation: ${c.precipitation} inches`;
+try {
+const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,wind_direction_10m,precipitation&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago`;
+const res = await fetch(url);
+const data = await res.json();
+const c = data.current;
+document.getElementById('currentOutput').innerHTML =
+`Temperature: ${Math.round(c.temperature_2m)} degrees F<br>` +
+`Wind: ${Math.round(c.wind_speed_10m)} mph<br>` +
+`Precipitation: ${c.precipitation} inches`;
 
-    const dir = c.wind_direction_10m;
-    document.getElementById('compassArrow').style.transform = `rotate(${dir}deg)`;
-    const dirs = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
-    const dirName = dirs[Math.round(dir / 22.5) % 16];
-    document.getElementById('windDirLabel').innerText = `Wind from ${dirName} (${Math.round(dir)} degrees)`;
-  } catch (err) {
-    document.getElementById('currentOutput').innerText = "Couldn't load current conditions.";
-  }
+const dir = c.wind_direction_10m;
+document.getElementById('compassArrow').style.transform = `rotate(${dir}deg)`;
+const dirs = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+const dirName = dirs[Math.round(dir / 22.5) % 16];
+document.getElementById('windDirLabel').innerText = `Wind from ${dirName} (${Math.round(dir)} degrees)`;
+} catch (err) {
+document.getElementById('currentOutput').innerText = "Couldn't load current conditions.";
+}
 }
 
 async function loadSkyInfo() {
-  try {
-    const url = `https://api.sunrise-sunset.org/json?lat=${LAT}&lng=${LON}&formatted=0`;
-    const res = await fetch(url);
-    const data = await res.json();
-    const sunrise = new Date(data.results.sunrise).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
-    const sunset = new Date(data.results.sunset).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
+try {
+const url = `https://api.sunrise-sunset.org/json?lat=${LAT}&lng=${LON}&formatted=0`;
+const res = await fetch(url);
+const data = await res.json();
+const sunrise = new Date(data.results.sunrise).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
+const sunset = new Date(data.results.sunset).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
 
-    const moonPhase = getMoonPhase();
+const moonPhase = getMoonPhase();
 
-    document.getElementById('skyOutput').innerHTML =
-      `Sunrise: ${sunrise}<br>Sunset: ${sunset}<br>Moon Phase: ${moonPhase}`;
-  } catch (err) {
-    document.getElementById('skyOutput').innerText = "Couldn't load sky info.";
-  }
+document.getElementById('skyOutput').innerHTML =
+`Sunrise: ${sunrise}<br>Sunset: ${sunset}<br>Moon Phase: ${moonPhase}`;
+} catch (err) {
+document.getElementById('skyOutput').innerText = "Couldn't load sky info.";
+}
 }
 
 function getMoonPhase() {
-  const knownNewMoon = new Date("2000-01-06T18:14:00Z").getTime();
-  const lunarCycle = 29.53058867 * 24 * 60 * 60 * 1000;
-  const now = new Date().getTime();
-  const phase = ((now - knownNewMoon) % lunarCycle) / lunarCycle;
+const knownNewMoon = new Date("2000-01-06T18:14:00Z").getTime();
+const lunarCycle = 29.53058867 * 24 * 60 * 60 * 1000;
+const now = new Date().getTime();
+const phase = ((now - knownNewMoon) % lunarCycle) / lunarCycle;
 
-  if (phase < 0.03 || phase > 0.97) return "New Moon";
-  if (phase < 0.22) return "Waxing Crescent";
-  if (phase < 0.28) return "First Quarter";
-  if (phase < 0.47) return "Waxing Gibbous";
-  if (phase < 0.53) return "Full Moon";
-  if (phase < 0.72) return "Waning Gibbous";
-  if (phase < 0.78) return "Last Quarter";
-  return "Waning Crescent";
+if (phase < 0.03 || phase > 0.97) return "New Moon";
+if (phase < 0.22) return "Waxing Crescent";
+if (phase < 0.28) return "First Quarter";
+if (phase < 0.47) return "Waxing Gibbous";
+if (phase < 0.53) return "Full Moon";
+if (phase < 0.72) return "Waning Gibbous";
+if (phase < 0.78) return "Last Quarter";
+return "Waning Crescent";
 }
 
 async function loadWeather() {
-  try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=cape,wind_speed_10m,wind_speed_80m&forecast_days=1&timezone=America%2FChicago`;
-    const res = await fetch(url);
-    const data = await res.json();
-    const hourly = data.hourly;
+try {
+const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=cape,wind_speed_10m,wind_speed_80m&forecast_days=1&timezone=America%2FChicago`;
+const res = await fetch(url);
+const data = await res.json();
+const hourly = data.hourly;
 
-    let maxCape = 0;
-    let maxShear = 0;
-    for (let i = 0; i < hourly.time.length; i++) {
-      const cape = hourly.cape[i] || 0;
-      const shear = Math.abs((hourly.wind_speed_80m[i] || 0) - (hourly.wind_speed_10m[i] || 0));
-      if (cape > maxCape) maxCape = cape;
-      if (shear > maxShear) maxShear = shear;
-    }
+let maxCape = 0;
+let maxShear = 0;
+for (let i = 0; i < hourly.time.length; i++) {
+const cape = hourly.cape[i] || 0;
+const shear = Math.abs((hourly.wind_speed_80m[i] || 0) - (hourly.wind_speed_10m[i] || 0));
+if (cape > maxCape) maxCape = cape;
+if (shear > maxShear) maxShear = shear;
+}
 
-    const elevated = maxCape >= CAPE_THRESHOLD && maxShear >= SHEAR_THRESHOLD;
-    document.getElementById('output').innerHTML =
-      `Peak CAPE: ${Math.round(maxCape)} J/kg<br>Peak Shear: ${maxShear.toFixed(1)} m/s<br>` +
-      (elevated
-        ? `<span class="elevated">Chase Potential: ELEVATED</span>`
-        : `<span class="low">Chase Potential: Low</span>`);
-  } catch (err) {
-    document.getElementById('output').innerText = "Couldn't load weather data.";
-  }
+const elevated = maxCape >= CAPE_THRESHOLD && maxShear >= SHEAR_THRESHOLD;
+document.getElementById('output').innerHTML =
+`Peak CAPE: ${Math.round(maxCape)} J/kg<br>Peak Shear: ${maxShear.toFixed(1)} m/s<br>` +
+(elevated
+? `<span class="elevated">Chase Potential: ELEVATED</span>`
+: `<span class="low">Chase Potential: Low</span>`);
+} catch (err) {
+document.getElementById('output').innerText = "Couldn't load weather data.";
+}
 }
 
 async function loadAlerts() {
-  try {
-    const zones = ["WIC081","WIC033","WIC063","WIC121","WIC123","WIC059"];
-    let allAlerts = [];
-    for (const zone of zones) {
-      const res = await fetch(`https://api.weather.gov/alerts/active?zone=${zone}`);
-      const data = await res.json();
-      if (data.features) allAlerts = allAlerts.concat(data.features);
-    }
-    if (allAlerts.length === 0) {
-      document.getElementById('alerts').innerText = "No active alerts right now.";
-    } else {
-      document.getElementById('alerts').innerHTML = allAlerts
-        .map(a => `<strong>${a.properties.event}</strong>: ${a.properties.headline}`)
-        .join('<br><br>');
-    }
-  } catch (err) {
-    document.getElementById('alerts').innerText = "Couldn't load alerts.";
-  }
+try {
+const zones = ["WIC081","WIC033","WIC063","WIC121","WIC123","WIC059"];
+let allAlerts = [];
+for (const zone of zones) {
+const res = await fetch(`https://api.weather.gov/alerts/active?zone=${zone}`);
+const data = await res.json();
+if (data.features) allAlerts = allAlerts.concat(data.features);
+}
+if (allAlerts.length === 0) {
+document.getElementById('alerts').innerText = "No active alerts right now.";
+} else {
+document.getElementById('alerts').innerHTML = allAlerts
+.map(a => `<strong>${a.properties.event}</strong>: ${a.properties.headline}`)
+.join('<br><br>');
+}
+} catch (err) {
+document.getElementById('alerts').innerText = "Couldn't load alerts.";
+}
 }
 
 async function loadRadarMap() {
-  try {
-    const map = L.map('radarMap', { zoomControl: true }).setView([LAT, LON], 7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+try {
+const map = L.map('radarMap', { zoomControl: true }).setView([LAT, LON], 7);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
 
-    const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-    const data = await res.json();
-    const frames = data.radar.past;
-    const latestFrame = frames[frames.length - 1];
+const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+const data = await res.json();
+const frames = data.radar.past;
+const latestFrame = frames[frames.length - 1];
 
-    L.tileLayer(`https://tilecache.rainviewer.com${latestFrame.path}/256/{z}/{x}/{y}/2/1_1.png`, {
-      opacity: 0.7
-    }).addTo(map);
-  } catch (err) {
-    document.getElementById('radarMap').innerText = "Couldn't load radar map.";
-  }
+L.tileLayer(`https://tilecache.rainviewer.com${latestFrame.path}/256/{z}/{x}/{y}/2/1_1.png`, {
+opacity: 0.7
+}).addTo(map);
+} catch (err) {
+document.getElementById('radarMap').innerText = "Couldn't load radar map.";
+}
 }
 
 loadCurrent();
