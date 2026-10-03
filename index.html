@@ -31,7 +31,7 @@
     border-radius: 8px;
     font-size: 1.1em;
   }
-  #stats, #current {
+  #stats, #current, #skyinfo {
     font-size: 1.2em;
     background: #222;
     padding: 15px;
@@ -50,6 +50,24 @@
     border: 2px solid #4fc3f7;
     border-radius: 8px;
   }
+  #compass {
+    width: 120px;
+    height: 120px;
+    margin: 15px auto;
+    position: relative;
+  }
+  #compassArrow {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 50px solid #ff5252;
+    position: absolute;
+    top: 10px;
+    left: 50px;
+    transform-origin: 50% 90%;
+    transition: transform 0.5s ease;
+  }
 </style>
 </head>
 <body>
@@ -60,6 +78,15 @@
 <div class="section" id="current">
   <h2>Current Conditions</h2>
   <p id="currentOutput">Loading current conditions...</p>
+  <div id="compass">
+    <div id="compassArrow"></div>
+  </div>
+  <p id="windDirLabel"></p>
+</div>
+
+<div class="section" id="skyinfo">
+  <h2>Sky Info</h2>
+  <p id="skyOutput">Loading sky info...</p>
 </div>
 
 <div class="section">
@@ -105,9 +132,48 @@ async function loadCurrent() {
       `Temperature: ${Math.round(c.temperature_2m)} degrees F<br>` +
       `Wind: ${Math.round(c.wind_speed_10m)} mph<br>` +
       `Precipitation: ${c.precipitation} inches`;
+
+    const dir = c.wind_direction_10m;
+    document.getElementById('compassArrow').style.transform = `rotate(${dir}deg)`;
+    const dirs = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+    const dirName = dirs[Math.round(dir / 22.5) % 16];
+    document.getElementById('windDirLabel').innerText = `Wind from ${dirName} (${Math.round(dir)} degrees)`;
   } catch (err) {
     document.getElementById('currentOutput').innerText = "Couldn't load current conditions.";
   }
+}
+
+async function loadSkyInfo() {
+  try {
+    const url = `https://api.sunrise-sunset.org/json?lat=${LAT}&lng=${LON}&formatted=0`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const sunrise = new Date(data.results.sunrise).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
+    const sunset = new Date(data.results.sunset).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
+
+    const moonPhase = getMoonPhase();
+
+    document.getElementById('skyOutput').innerHTML =
+      `Sunrise: ${sunrise}<br>Sunset: ${sunset}<br>Moon Phase: ${moonPhase}`;
+  } catch (err) {
+    document.getElementById('skyOutput').innerText = "Couldn't load sky info.";
+  }
+}
+
+function getMoonPhase() {
+  const knownNewMoon = new Date("2000-01-06T18:14:00Z").getTime();
+  const lunarCycle = 29.53058867 * 24 * 60 * 60 * 1000;
+  const now = new Date().getTime();
+  const phase = ((now - knownNewMoon) % lunarCycle) / lunarCycle;
+
+  if (phase < 0.03 || phase > 0.97) return "New Moon";
+  if (phase < 0.22) return "Waxing Crescent";
+  if (phase < 0.28) return "First Quarter";
+  if (phase < 0.47) return "Waxing Gibbous";
+  if (phase < 0.53) return "Full Moon";
+  if (phase < 0.72) return "Waning Gibbous";
+  if (phase < 0.78) return "Last Quarter";
+  return "Waning Crescent";
 }
 
 async function loadWeather() {
@@ -179,6 +245,7 @@ async function loadRadarMap() {
 }
 
 loadCurrent();
+loadSkyInfo();
 loadWeather();
 loadAlerts();
 loadRadarMap();
