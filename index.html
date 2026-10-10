@@ -1,129 +1,140 @@
-Done — I made the compass circle bigger and moved the direction letters outside the circle instead of on top of it, so there's no more overlap. Here's the full file to paste in, same as always.
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Monroe County Storm Chase Dashboard</title>
 <meta http-equiv="refresh" content="300">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
-* {
-box-sizing: border-box;
+:root {
+  --bg-base: #0b0e14;
+  --bg-panel: #141a24;
+  --storm-blue: #1e3a5f;
+  --storm-purple: #4b2e83;
+  --text: #e8ecf1;
+  --text-dim: #8b96a8;
+  --cyan: #3fd0e8;
+  --amber: #f5a623;
+  --red: #e8453c;
+  --green: #5fd39a;
+  --border: #2a3341;
 }
+* { box-sizing: border-box; }
 body {
-background: linear-gradient(160deg, #0b0e14 0%, #10151f 100%);
-color: #e8ecf1;
-font-family: 'Inter', Arial, sans-serif;
-text-align: center;
-padding: 30px 16px;
-margin: 0;
+  margin: 0;
+  background: var(--bg-base);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
 }
+header {
+  background: linear-gradient(120deg, var(--storm-blue) 0%, var(--storm-purple) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 28px 20px 24px;
+}
+.header-inner { max-width: 1100px; margin: 0 auto; }
 h1 {
-color: #4fc3f7;
-font-weight: 800;
-letter-spacing: 0.5px;
-margin-bottom: 4px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 2.4rem;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  margin: 0 0 4px;
 }
-.updated {
-font-size: 0.85em;
-color: #7a8699;
-margin-top: 0;
-margin-bottom: 30px;
-}
+.updated { margin: 0; font-size: 0.9rem; color: #c3cbe0; }
+main { padding: 24px 16px 48px; }
 .grid {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-gap: 20px;
-max-width: 1100px;
-margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 .card {
-background: #161c27;
-border: 1px solid #262e3d;
-border-radius: 16px;
-padding: 22px;
-box-shadow: 0 4px 18px rgba(0,0,0,0.35);
-transition: transform 0.2s ease, box-shadow 0.2s ease;
-text-align: center;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
 }
-.card:hover {
-transform: translateY(-3px);
-box-shadow: 0 8px 26px rgba(79,195,247,0.15);
-}
-.card.wide {
-grid-column: 1 / -1;
-}
+.card.wide { grid-column: 1 / -1; }
 .card h2 {
-margin-top: 0;
-font-size: 1.1em;
-color: #4fc3f7;
-font-weight: 600;
-letter-spacing: 0.3px;
-text-transform: uppercase;
+  margin: 0;
+  padding: 10px 18px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 1.25rem;
+  letter-spacing: 0.03em;
+  background: linear-gradient(120deg, rgba(30,58,95,0.75), rgba(75,46,131,0.75));
+  border-bottom: 1px solid var(--border);
 }
-.card p {
-font-size: 1.05em;
-line-height: 1.6em;
-color: #dbe2ea;
+.card-body { padding: 18px; color: var(--text); }
+.card-body p { margin: 0 0 8px; }
+.dim { color: var(--text-dim); }
+.readout { font-size: 1.1rem; line-height: 1.8; }
+.chase-status {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  border: 1px solid currentColor;
 }
-#skyOutput {
-font-size: 1.35em;
-line-height: 1.8em;
-}
+.elevated { color: var(--red); background: rgba(232,69,60,0.12); }
+.low { color: var(--green); background: rgba(95,211,154,0.10); }
 a.link-btn {
-display: inline-block;
-margin: 6px;
-padding: 13px 24px;
-background: linear-gradient(135deg, #4fc3f7, #2196f3);
-color: #0b0e14;
-font-weight: 600;
-text-decoration: none;
-border-radius: 10px;
-font-size: 1em;
-transition: opacity 0.2s ease;
+  display: inline-block;
+  margin: 4px 6px 4px 0;
+  padding: 11px 20px;
+  background: var(--cyan);
+  color: var(--bg-base);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 8px;
 }
-a.link-btn:hover {
-opacity: 0.85;
+a.link-btn:hover { background: #7be0f1; }
+a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+#radarMap { height: 420px; width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 14px; }
+.alert {
+  border-left: 4px solid var(--amber);
+  background: rgba(245,166,35,0.10);
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 10px;
 }
-.elevated { color: #ff6e6e; font-weight: 700; }
-.low { color: #7ee0a3; font-weight: 700; }
-#radarMap {
-height: 420px;
-width: 100%;
-border-radius: 12px;
-overflow: hidden;
+.alert.severe {
+  border-left-color: var(--red);
+  background: rgba(232,69,60,0.10);
+  animation: pulse 2s ease-in-out infinite;
 }
+.alert strong { display: block; }
+.alert span { color: var(--text-dim); font-size: 0.95rem; }
+.no-alerts { color: var(--green); }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
+@media (prefers-reduced-motion: reduce) { .alert.severe { animation: none; } }
 #compass {
-width: 210px;
-height: 210px;
-margin: 10px auto;
-position: relative;
-border: 2px solid #4fc3f7;
-border-radius: 50%;
-background: #0e131c;
+  width: 210px; height: 210px;
+  margin: 24px auto 28px;
+  position: relative;
+  border: 2px solid var(--cyan);
+  border-radius: 50%;
+  background: #0e131c;
 }
 #compassArrow {
-width: 0;
-height: 0;
-border-left: 9px solid transparent;
-border-right: 9px solid transparent;
-border-bottom: 56px solid #ff6e6e;
-position: absolute;
-top: 48px;
-left: 96px;
-transform-origin: 50% 90%;
-transition: transform 0.5s ease;
+  width: 0; height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-bottom: 56px solid var(--amber);
+  position: absolute;
+  top: 48px; left: 96px;
+  transform-origin: 50% 90%;
+  transition: transform 0.5s ease;
 }
-.compass-label {
-position: absolute;
-font-size: 0.8em;
-font-weight: 700;
-color: #4fc3f7;
-}
+.compass-label { position: absolute; font-size: 0.8rem; font-weight: 600; color: var(--cyan); }
 .label-n { top: -22px; left: 50%; transform: translateX(-50%); }
 .label-s { bottom: -22px; left: 50%; transform: translateX(-50%); }
 .label-e { right: -26px; top: 50%; transform: translateY(-50%); }
@@ -132,18 +143,25 @@ color: #4fc3f7;
 .label-nw { top: -6px; left: -6px; }
 .label-se { bottom: -6px; right: -6px; }
 .label-sw { bottom: -6px; left: -6px; }
+#windDirLabel { text-align: center; color: var(--text-dim); }
 </style>
 </head>
 <body>
 
+<header>
+<div class="header-inner">
 <h1>Monroe County Storm Chase Dashboard</h1>
-<p class="updated">Page auto-refreshes every 5 minutes</p>
+<p class="updated">Refreshes every 5 minutes</p>
+</div>
+</header>
 
+<main>
 <div class="grid">
 
-<div class="card">
-<h2>Current Conditions</h2>
-<p id="currentOutput">Loading current conditions...</p>
+<section class="card">
+<h2>Current conditions</h2>
+<div class="card-body">
+<p id="currentOutput" class="readout">Loading current conditions...</p>
 <div id="compass">
 <div id="compassArrow"></div>
 <span class="compass-label label-n">N</span>
@@ -157,39 +175,53 @@ color: #4fc3f7;
 </div>
 <p id="windDirLabel"></p>
 </div>
+</section>
 
-<div class="card">
-<h2>Sky Info</h2>
-<p id="skyOutput">Loading sky info...</p>
+<section class="card">
+<h2>Sky info</h2>
+<div class="card-body">
+<p id="skyOutput" class="readout">Loading sky info...</p>
 </div>
+</section>
 
-<div class="card">
-<h2>Chase Potential</h2>
-<p id="output">Loading data...</p>
+<section class="card">
+<h2>Chase potential</h2>
+<div class="card-body">
+<p id="output" class="readout">Loading data...</p>
 </div>
+</section>
 
-<div class="card wide">
-<h2>Live Radar Map</h2>
+<section class="card wide">
+<h2>Live radar</h2>
+<div class="card-body">
 <div id="radarMap"></div>
-<p><a class="link-btn" href="https://radar.weather.gov/station/arx/standard" target="_blank">Open Full NWS Radar</a></p>
+<a class="link-btn" href="https://radar.weather.gov/station/arx/standard" target="_blank" rel="noopener">Open full NWS radar</a>
 </div>
+</section>
 
-<div class="card wide">
-<h2>Active Alerts</h2>
-<p id="alerts">Loading alerts...</p>
+<section class="card wide">
+<h2>Active alerts</h2>
+<div class="card-body">
+<div id="alerts">Loading alerts...</div>
 </div>
+</section>
 
-<div class="card">
-<h2>Storm Reports</h2>
-<a class="link-btn" href="https://www.spc.noaa.gov/climo/reports/today.html" target="_blank">Open Today's Storm Reports</a>
+<section class="card">
+<h2>Storm reports</h2>
+<div class="card-body">
+<a class="link-btn" href="https://www.spc.noaa.gov/climo/reports/today.html" target="_blank" rel="noopener">Open today's storm reports</a>
 </div>
+</section>
 
-<div class="card">
-<h2>Live Lightning Map</h2>
-<a class="link-btn" href="https://www.lightningmaps.org/" target="_blank">Open Live Lightning Map</a>
+<section class="card">
+<h2>Lightning</h2>
+<div class="card-body">
+<a class="link-btn" href="https://www.lightningmaps.org/" target="_blank" rel="noopener">Open live lightning map</a>
 </div>
+</section>
 
 </div>
+</main>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -272,8 +304,8 @@ const elevated = maxCape >= CAPE_THRESHOLD && maxShear >= SHEAR_THRESHOLD;
 document.getElementById('output').innerHTML =
 `Peak CAPE: ${Math.round(maxCape)} J/kg<br>Peak Shear: ${maxShear.toFixed(1)} m/s<br>` +
 (elevated
-? `<span class="elevated">Chase Potential: ELEVATED</span>`
-: `<span class="low">Chase Potential: Low</span>`);
+? `<span class="chase-status elevated">Chase potential: elevated</span>`
+: `<span class="chase-status low">Chase potential: low</span>`);
 } catch (err) {
 document.getElementById('output').innerText = "Couldn't load weather data.";
 }
@@ -282,18 +314,21 @@ document.getElementById('output').innerText = "Couldn't load weather data.";
 async function loadAlerts() {
 try {
 const zones = ["WIC081","WIC033","WIC063","WIC121","WIC123","WIC059"];
-let allAlerts = [];
+const seen = new Map();
 for (const zone of zones) {
 const res = await fetch(`https://api.weather.gov/alerts/active?zone=${zone}`);
 const data = await res.json();
-if (data.features) allAlerts = allAlerts.concat(data.features);
+if (data.features) data.features.forEach(f => seen.set(f.id, f));
 }
-if (allAlerts.length === 0) {
-document.getElementById('alerts').innerText = "No active alerts right now.";
+const box = document.getElementById('alerts');
+if (seen.size === 0) {
+box.innerHTML = '<span class="no-alerts">No active alerts right now.</span>';
 } else {
-document.getElementById('alerts').innerHTML = allAlerts
-.map(a => `<strong>${a.properties.event}</strong>: ${a.properties.headline}`)
-.join('<br><br>');
+box.innerHTML = [...seen.values()].map(a => {
+const p = a.properties;
+const severe = /warning/i.test(p.event);
+return `<div class="alert${severe ? ' severe' : ''}"><strong>${p.event}</strong><span>${p.headline}</span></div>`;
+}).join('');
 }
 } catch (err) {
 document.getElementById('alerts').innerText = "Couldn't load alerts.";
@@ -329,4 +364,3 @@ loadRadarMap();
 
 </body>
 </html>
-```
