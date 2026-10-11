@@ -75,6 +75,13 @@ main { padding: 24px 16px 48px; }
 .card-body { padding: 18px; color: var(--text); }
 .card-body p { margin: 0 0 8px; }
 .dim { color: var(--text-dim); }
+.moon-wrap { display: flex; align-items: center; gap: 18px; margin-top: 10px; }
+.moon {
+  width: 72px; height: 72px;
+  flex-shrink: 0;
+}
+.moon svg { display: block; width: 100%; height: 100%; }
+.moon-caption p { margin: 0 0 4px; }
 .readout { font-size: 1.1rem; line-height: 1.8; }
 .chase-status {
   display: inline-block;
@@ -183,7 +190,12 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 <section class="card">
 <h2>Sky info</h2>
 <div class="card-body">
+<div class="moon-wrap">
+<div class="moon" id="moonVisual"></div>
+<div class="moon-caption">
 <p id="skyOutput" class="readout">Loading sky info...</p>
+</div>
+</div>
 </div>
 </section>
 
@@ -262,7 +274,9 @@ const data = await res.json();
 const sunrise = new Date(data.results.sunrise).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
 const sunset = new Date(data.results.sunset).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
 
-const moonPhase = getMoonPhase();
+const phaseFraction = getMoonPhaseFraction();
+const moonPhase = getMoonPhaseName(phaseFraction);
+drawMoonVisual(phaseFraction);
 
 document.getElementById('skyOutput').innerHTML =
 `Sunrise: ${sunrise}<br>Sunset: ${sunset}<br>Moon Phase: ${moonPhase}`;
@@ -271,12 +285,14 @@ document.getElementById('skyOutput').innerText = "Couldn't load sky info.";
 }
 }
 
-function getMoonPhase() {
+function getMoonPhaseFraction() {
 const knownNewMoon = new Date("2000-01-06T18:14:00Z").getTime();
 const lunarCycle = 29.53058867 * 24 * 60 * 60 * 1000;
 const now = new Date().getTime();
-const phase = ((now - knownNewMoon) % lunarCycle) / lunarCycle;
+return ((now - knownNewMoon) % lunarCycle) / lunarCycle;
+}
 
+function getMoonPhaseName(phase) {
 if (phase < 0.03 || phase > 0.97) return "New Moon";
 if (phase < 0.22) return "Waxing Crescent";
 if (phase < 0.28) return "First Quarter";
@@ -285,6 +301,29 @@ if (phase < 0.53) return "Full Moon";
 if (phase < 0.72) return "Waning Gibbous";
 if (phase < 0.78) return "Last Quarter";
 return "Waning Crescent";
+}
+
+function drawMoonVisual(phase) {
+const moonEl = document.getElementById('moonVisual');
+if (!moonEl) return;
+
+const r = 36;
+const c = Math.cos(2 * Math.PI * phase);
+const rx = (r * Math.abs(c)).toFixed(2);
+const waxing = phase < 0.5;
+const limbSweep = waxing ? 1 : 0;
+const termSweep = waxing ? (c < 0 ? 1 : 0) : (c < 0 ? 0 : 1);
+
+let lit = '';
+if (phase > 0.03 && phase < 0.97) {
+lit = `<path d="M ${r} 0 A ${r} ${r} 0 0 ${limbSweep} ${r} ${r * 2} A ${rx} ${r} 0 0 ${termSweep} ${r} 0 Z" fill="#f4f1e6"/>`;
+}
+const full = phase > 0.47 && phase < 0.53;
+moonEl.innerHTML =
+`<svg viewBox="0 0 72 72" role="img" aria-label="Moon phase">` +
+`<circle cx="${r}" cy="${r}" r="${r - 1}" fill="#1a2232" stroke="#2a3341" stroke-width="1"/>` +
+(full ? `<circle cx="${r}" cy="${r}" r="${r - 1}" fill="#f4f1e6"/>` : lit) +
+`</svg>`;
 }
 
 async function loadWeather() {
@@ -341,8 +380,10 @@ document.getElementById('alerts').innerText = "Couldn't load alerts.";
 async function loadRadarMap() {
 try {
 const map = L.map('radarMap', { zoomControl: true }).setView([LAT, LON], 7);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-attribution: '&copy; OpenStreetMap contributors'
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+subdomains: 'abcd',
+maxZoom: 19
 }).addTo(map);
 
 const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
