@@ -120,21 +120,24 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
   width: 210px; height: 210px;
   margin: 24px auto 28px;
   position: relative;
-  border: 2px solid var(--cyan);
   border-radius: 50%;
   background: #0e131c;
+  border: 3px solid transparent;
+  background-image: linear-gradient(#0e131c, #0e131c), linear-gradient(135deg, var(--storm-blue), var(--storm-purple));
+  background-origin: border-box;
+  background-clip: content-box, border-box;
 }
 #compassArrow {
   width: 0; height: 0;
-  border-left: 9px solid transparent;
-  border-right: 9px solid transparent;
-  border-bottom: 56px solid var(--amber);
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 72px solid var(--amber);
   position: absolute;
-  top: 48px; left: 96px;
+  top: 36px; left: 93px;
   transform-origin: 50% 90%;
   transition: transform 0.5s ease;
 }
-.compass-label { position: absolute; font-size: 0.8rem; font-weight: 600; color: var(--cyan); }
+.compass-label { position: absolute; font-size: 0.8rem; font-weight: 600; color: #8fb3d9; }
 .label-n { top: -22px; left: 50%; transform: translateX(-50%); }
 .label-s { bottom: -22px; left: 50%; transform: translateX(-50%); }
 .label-e { right: -26px; top: 50%; transform: translateY(-50%); }
