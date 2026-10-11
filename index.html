@@ -121,6 +121,28 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 .alert strong { display: block; }
 .alert span { color: var(--text-dim); font-size: 0.95rem; }
 .no-alerts { color: var(--green); }
+.report-group { margin-bottom: 14px; }
+.report-group:last-child { margin-bottom: 0; }
+.report-group h3 {
+  margin: 0 0 6px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.report-group.tornado h3 { color: var(--red); }
+.report-group.wind h3 { color: var(--cyan); }
+.report-group.hail h3 { color: var(--amber); }
+.report-list { list-style: none; margin: 0; padding: 0; }
+.report-list li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+.report-list li:last-child { border-bottom: none; }
+.report-time { color: var(--text-dim); margin-right: 8px; }
+.report-measure { font-weight: 600; margin-right: 8px; }
+.no-reports { color: var(--text-dim); }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
 @media (prefers-reduced-motion: reduce) { .alert.severe { animation: none; } }
 #compass {
@@ -221,10 +243,11 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 </div>
 </section>
 
-<section class="card">
+<section class="card wide">
 <h2>Storm reports</h2>
 <div class="card-body">
-<a class="link-btn" href="https://www.spc.noaa.gov/climo/reports/today.html" target="_blank" rel="noopener">Open today's storm reports</a>
+<div id="stormReports">Loading today's storm reports...</div>
+<a class="link-btn" href="https://www.spc.noaa.gov/climo/reports/today.html" target="_blank" rel="noopener">Open full SPC report page</a>
 </div>
 </section>
 
@@ -377,6 +400,56 @@ document.getElementById('alerts').innerText = "Couldn't load alerts.";
 }
 }
 
+function parseReportCSV(text) {
+const lines = text.trim().split('\n');
+if (lines.length <= 1) return [];
+return lines.slice(1).map(line => {
+// simple CSV split; SPC fields don't contain embedded commas in quotes for these feeds
+const parts = line.split(',');
+return parts;
+});
+}
+
+async function loadStormReports() {
+const box = document.getElementById('stormReports');
+try {
+const [tornRes, windRes, hailRes] = await Promise.all([
+fetch('https://www.spc.noaa.gov/climo/reports/today_torn.csv'),
+fetch('https://www.spc.noaa.gov/climo/reports/today_wind.csv'),
+fetch('https://www.spc.noaa.gov/climo/reports/today_hail.csv')
+]);
+const [tornText, windText, hailText] = await Promise.all([tornRes.text(), windRes.text(), hailRes.text()]);
+
+const tornadoes = parseReportCSV(tornText); // Time,F_Scale,Location,County,State,Lat,Lon,Comments
+const wind = parseReportCSV(windText); // Time,Speed,Location,County,State,Lat,Lon,Comments
+const hail = parseReportCSV(hailText); // Time,Size,Location,County,State,Lat,Lon,Comments
+
+function formatTime(t) {
+if (!t || t.length !== 4) return t;
+return `${t.slice(0,2)}:${t.slice(2)}`;
+}
+
+function buildGroup(className, label, rows, measureFn) {
+const inner = rows.length === 0
+? '<p class="no-reports">No reports today.</p>'
+: '<ul class="report-list">' + rows.map(r => {
+const [time, measure, location, county, state] = r;
+return `<li><span class="report-time">${formatTime(time)}</span>` +
+`<span class="report-measure">${measureFn(measure)}</span>` +
+`${location}, ${county} County, ${state}</li>`;
+}).join('') + '</ul>';
+return `<div class="report-group ${className}"><h3>${label} (${rows.length})</h3>${inner}</div>`;
+}
+
+box.innerHTML =
+buildGroup('tornado', 'Tornado reports', tornadoes, f => `F/EF-${f}`) +
+buildGroup('wind', 'Wind reports', wind, s => `${s} kt`) +
+buildGroup('hail', 'Hail reports', hail, s => `${(parseInt(s, 10) / 100).toFixed(2)} in`);
+} catch (err) {
+box.innerText = "Couldn't load storm reports.";
+}
+}
+
 async function loadRadarMap() {
 try {
 const map = L.map('radarMap', { zoomControl: true }).setView([LAT, LON], 7);
@@ -406,6 +479,7 @@ loadCurrent();
 loadSkyInfo();
 loadWeather();
 loadAlerts();
+loadStormReports();
 loadRadarMap();
 </script>
 
