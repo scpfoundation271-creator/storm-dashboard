@@ -380,10 +380,13 @@ document.getElementById('alerts').innerText = "Couldn't load alerts.";
 async function loadRadarMap() {
 try {
 const map = L.map('radarMap', { zoomControl: true }).setView([LAT, LON], 7);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-subdomains: 'abcd',
-maxZoom: 19
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+attribution: 'Esri, HERE, Garmin, FAO, NOAA, USGS',
+maxZoom: 16
+}).addTo(map);
+
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+maxZoom: 16
 }).addTo(map);
 
 const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
