@@ -275,7 +275,7 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 <section class="card wide">
 <h2>SPC convective outlook</h2>
 <div class="card-body">
-<img id="outlookImg" class="outlook-img" alt="SPC Day 1 convective outlook map" src="https://www.spc.noaa.gov/products/outlook/day1otlk.gif" onerror="this.style.display='none'">
+<img id="outlookImg" class="outlook-img" alt="SPC Day 1 convective outlook map" src="https://www.spc.noaa.gov/products/outlook/day1otlk.png">
 <a class="link-btn" href="https://www.spc.noaa.gov/products/outlook/day1otlk.html" target="_blank" rel="noopener">Open full Day 1 outlook</a>
 <a class="link-btn" href="https://www.spc.noaa.gov/products/outlook/day2otlk.html" target="_blank" rel="noopener">Day 2 outlook</a>
 </div>
@@ -647,6 +647,25 @@ rainLayer = newLayer;
 }
 }
 
+function loadOutlookImage() {
+const img = document.getElementById('outlookImg');
+if (!img) return;
+const base = 'https://www.spc.noaa.gov/products/outlook/';
+const candidates = [base + 'day1otlk.png', base + 'day1otlk_1200.png'];
+let i = 0;
+const stamp = Date.now();
+img.style.display = 'block';
+img.onerror = function() {
+i++;
+if (i < candidates.length) {
+img.src = candidates[i] + '?t=' + stamp;
+} else {
+img.style.display = 'none';
+}
+};
+img.src = candidates[0] + '?t=' + stamp;
+}
+
 function stamp() {
 const el = document.getElementById('lastUpdated');
 if (el) el.textContent = '(last: ' + new Date().toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' }) + ')';
@@ -659,6 +678,7 @@ loadWeather();
 loadAlerts();
 loadStormReports();
 refreshRadarLayer();
+loadOutlookImage();
 stamp();
 }
 
