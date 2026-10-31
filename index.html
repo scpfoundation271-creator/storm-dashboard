@@ -196,6 +196,16 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 .pressure-arrow.falling { color: var(--red); }
 .pressure-arrow.steady { color: var(--text-dim); }
 .outlook-img { display: block; width: 100%; max-width: 815px; height: auto; margin: 0 auto 14px; border-radius: 8px; background: #0e131c; }
+.watch-banner { display: none; max-width: 1100px; margin: 0 auto 20px; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--amber); background: rgba(245,166,35,0.12); font-weight: 600; }
+.watch-banner.show { display: block; }
+.watch-banner.tornado { border-color: var(--red); background: rgba(232,69,60,0.14); }
+.watch-banner span { display: block; font-weight: 400; color: var(--text-dim); font-size: 0.95rem; margin-top: 2px; }
+.hotspot-list { list-style: none; margin: 0; padding: 0; }
+.hotspot-list li { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+.hotspot-list li:last-child { border-bottom: none; }
+.hs-state { width: 34px; font-weight: 600; }
+.hs-bar { height: 10px; border-radius: 5px; background: linear-gradient(90deg, var(--cyan), var(--storm-purple)); }
+.hs-count { color: var(--text-dim); font-size: 0.9rem; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -208,6 +218,7 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 </header>
 
 <main>
+<div id="watchBanner" class="watch-banner"></div>
 <div class="grid">
 
 <section class="card">
@@ -216,6 +227,7 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 <p id="currentOutput" class="readout">Loading current conditions...</p>
 <div class="pressure-row readout"><span id="pressureText">Pressure: loading...</span><span id="pressureArrow" class="pressure-arrow steady"></span></div>
 <p id="dewPointText" class="readout">Dew point: loading...</p>
+<p id="cloudBaseText" class="readout">Cloud base: loading...</p>
 <div id="compass">
 <div id="compassArrow"></div>
 <span class="compass-label label-n">N</span>
@@ -296,6 +308,13 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 </div>
 </section>
 
+<section class="card wide">
+<h2>Nationwide hot spots</h2>
+<div class="card-body">
+<div id="hotspots">Loading nationwide report counts...</div>
+</div>
+</section>
+
 </div>
 </main>
 
@@ -325,9 +344,22 @@ document.getElementById('windDirLabel').innerText = `Wind from ${dirName} (${Mat
 
 updatePressure(data.hourly);
 updateDewPoint(c.dew_point_2m);
+updateCloudBase(c.temperature_2m, c.dew_point_2m);
 } catch (err) {
 document.getElementById('currentOutput').innerText = "Couldn't load current conditions.";
 }
+}
+
+function updateCloudBase(tempF, dewF) {
+const el = document.getElementById('cloudBaseText');
+if (tempF === null || tempF === undefined || dewF === null || dewF === undefined) { el.textContent = 'Cloud base: unavailable'; return; }
+const spread = Math.max(0, tempF - dewF);
+const feet = Math.round((spread * 400) / 100) * 100;
+let note = 'high';
+if (feet < 1000) note = 'very low, tornado-favorable';
+else if (feet < 2000) note = 'low';
+else if (feet < 4000) note = 'moderate';
+el.textContent = `Est. cloud base: ${feet.toLocaleString('en-US')} ft (${note})`;
 }
 
 function updateDewPoint(dp) {
@@ -556,6 +588,31 @@ document.getElementById('alerts').innerText = "Couldn't load alerts.";
 }
 }
 
+async function loadWatches() {
+const banner = document.getElementById('watchBanner');
+try {
+const res = await fetch('https://api.weather.gov/alerts/active?event=Tornado%20Watch,Severe%20Thunderstorm%20Watch');
+const data = await res.json();
+const feats = data.features || [];
+const ours = ["WIC081","WIC033","WIC063","WIC121","WIC123","WIC059"];
+const mine = feats.filter(f => {
+const ugc = (f.properties.geocode && f.properties.geocode.UGC) || [];
+return ugc.some(code => ours.includes(code)) ||
+(f.properties.affectedZones || []).some(z => ours.some(o => z.endsWith('/' + o)));
+});
+if (mine.length > 0) {
+const hasTor = mine.some(f => /tornado watch/i.test(f.properties.event));
+banner.className = 'watch-banner show' + (hasTor ? ' tornado' : '');
+banner.innerHTML = mine.map(f => `${f.properties.event}<span>${f.properties.headline || ''}</span>`).join('<br>');
+} else {
+banner.className = 'watch-banner';
+banner.innerHTML = '';
+}
+} catch (err) {
+banner.className = 'watch-banner';
+}
+}
+
 function parseReportCSV(text) {
 const lines = text.trim().split('\n');
 if (lines.length <= 1) return [];
@@ -564,6 +621,25 @@ return lines.slice(1).map(line => {
 const parts = line.split(',');
 return parts;
 });
+}
+
+function renderHotspots(tornadoes, wind, hail) {
+const box = document.getElementById('hotspots');
+try {
+const counts = {};
+[tornadoes, wind, hail].forEach(rows => rows.forEach(r => {
+const st = (r[4] || '').trim();
+if (st) counts[st] = (counts[st] || 0) + 1;
+}));
+const list = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+if (list.length === 0) { box.innerHTML = '<p class="no-reports">No severe reports nationwide so far today.</p>'; return; }
+const max = list[0][1];
+box.innerHTML = '<ul class="hotspot-list">' + list.map(([st, n]) =>
+`<li><span class="hs-state">${st}</span><span class="hs-bar" style="width:${Math.max(6, Math.round((n / max) * 220))}px"></span><span class="hs-count">${n} report${n === 1 ? '' : 's'}</span></li>`
+).join('') + '</ul>';
+} catch (e) {
+box.innerText = "Couldn't build the hot spot list.";
+}
 }
 
 async function loadStormReports() {
@@ -604,6 +680,7 @@ return `<li><span class="report-time">${formatTime(time)}</span>` +
 return `<div class="report-group ${className}"><h3>${label} (${rows.length})</h3>${inner}</div>`;
 }
 
+renderHotspots(tornadoes, wind, hail);
 box.innerHTML =
 buildGroup('tornado', 'Tornado reports', tornadoes, f => `F/EF-${f}`) +
 buildGroup('wind', 'Wind reports', wind, s => `${s} kt`) +
@@ -676,6 +753,7 @@ loadCurrent();
 loadSkyInfo();
 loadWeather();
 loadAlerts();
+loadWatches();
 loadStormReports();
 refreshRadarLayer();
 loadOutlookImage();
