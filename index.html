@@ -426,7 +426,14 @@ const hail = parseReportCSV(hailText); // Time,Size,Location,County,State,Lat,Lo
 
 function formatTime(t) {
 if (!t || t.length !== 4) return t;
-return `${t.slice(0,2)}:${t.slice(2)}`;
+const hh = parseInt(t.slice(0,2), 10);
+const mm = parseInt(t.slice(2), 10);
+const now = new Date();
+let d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hh, mm));
+if (d.getTime() - now.getTime() > 3600000) {
+d = new Date(d.getTime() - 86400000);
+}
+return d.toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
 }
 
 function buildGroup(className, label, rows, measureFn) {
