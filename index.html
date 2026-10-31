@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ollie's Storm Dashboard</title>
-<meta http-equiv="refresh" content="300">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -176,6 +175,26 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 .label-se { bottom: -6px; right: -6px; }
 .label-sw { bottom: -6px; left: -6px; }
 #windDirLabel { text-align: center; color: var(--text-dim); }
+
+.alert-toggle {
+  margin-top: 14px;
+  padding: 9px 16px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.alert-toggle.on { border-color: var(--green); color: var(--green); background: rgba(95,211,154,0.10); }
+.alert-toggle:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+.pressure-row { display: flex; align-items: center; gap: 10px; }
+.pressure-arrow { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+.pressure-arrow.rising { color: var(--green); }
+.pressure-arrow.falling { color: var(--red); }
+.pressure-arrow.steady { color: var(--text-dim); }
 </style>
 </head>
 <body>
@@ -183,7 +202,7 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 <header>
 <div class="header-inner">
 <h1>Ollie's Storm Dashboard</h1>
-<p class="updated">Refreshes every 5 minutes</p>
+<p class="updated">Updates every 5 minutes <span id="lastUpdated"></span></p>
 </div>
 </header>
 
@@ -194,6 +213,7 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 <h2>Current conditions</h2>
 <div class="card-body">
 <p id="currentOutput" class="readout">Loading current conditions...</p>
+<div class="pressure-row readout"><span id="pressureText">Pressure: loading...</span><span id="pressureArrow" class="pressure-arrow steady"></span></div>
 <div id="compass">
 <div id="compassArrow"></div>
 <span class="compass-label label-n">N</span>
@@ -247,6 +267,7 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 <h2>Active alerts</h2>
 <div class="card-body">
 <div id="alerts">Loading alerts...</div>
+<button id="alertToggle" class="alert-toggle" type="button">Sound alerts: off (tap to enable)</button>
 </div>
 </section>
 
@@ -270,7 +291,7 @@ const SHEAR_THRESHOLD = 15;
 
 async function loadCurrent() {
 try {
-const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,wind_direction_10m,precipitation&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago`;
+const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,wind_direction_10m,precipitation&hourly=pressure_msl&past_hours=4&forecast_hours=1&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago`;
 const res = await fetch(url);
 const data = await res.json();
 const c = data.current;
@@ -284,8 +305,32 @@ document.getElementById('compassArrow').style.transform = `rotate(${dir}deg)`;
 const dirs = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
 const dirName = dirs[Math.round(dir / 22.5) % 16];
 document.getElementById('windDirLabel').innerText = `Wind from ${dirName} (${Math.round(dir)} degrees)`;
+
+updatePressure(data.hourly);
 } catch (err) {
 document.getElementById('currentOutput').innerText = "Couldn't load current conditions.";
+}
+}
+
+function updatePressure(hourly) {
+const textEl = document.getElementById('pressureText');
+const arrowEl = document.getElementById('pressureArrow');
+try {
+const vals = (hourly.pressure_msl || []).filter(v => v !== null);
+if (vals.length < 4) throw new Error('not enough data');
+const nowP = vals[vals.length - 1];
+const pastP = vals[Math.max(0, vals.length - 4)];
+const diffHpa = nowP - pastP;
+const inHg = (nowP * 0.02953).toFixed(2);
+let cls = 'steady', arrow = '\u2192', word = 'steady';
+if (diffHpa >= 1) { cls = 'rising'; arrow = '\u2191'; word = 'rising'; }
+else if (diffHpa <= -1) { cls = 'falling'; arrow = '\u2193'; word = 'falling'; }
+textEl.textContent = `Pressure: ${inHg} inHg, ${word}`;
+arrowEl.textContent = arrow;
+arrowEl.className = 'pressure-arrow ' + cls;
+} catch (e) {
+textEl.textContent = 'Pressure: unavailable';
+arrowEl.textContent = '';
 }
 }
 
@@ -376,6 +421,70 @@ document.getElementById('output').innerText = "Couldn't load weather data.";
 }
 }
 
+let audioCtx = null;
+let soundOn = localStorage.getItem('soundAlerts') === 'on';
+const knownAlertIds = new Set();
+let firstAlertLoad = true;
+
+function beep(freq, startAt, dur) {
+const osc = audioCtx.createOscillator();
+const gain = audioCtx.createGain();
+osc.type = 'square';
+osc.frequency.value = freq;
+gain.gain.setValueAtTime(0.0001, startAt);
+gain.gain.exponentialRampToValueAtTime(0.25, startAt + 0.02);
+gain.gain.exponentialRampToValueAtTime(0.0001, startAt + dur);
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+osc.start(startAt);
+osc.stop(startAt + dur + 0.05);
+}
+
+function playAlertSound(kind) {
+if (!soundOn || !audioCtx) return;
+if (audioCtx.state === 'suspended') audioCtx.resume();
+const t = audioCtx.currentTime + 0.05;
+if (kind === 'tornado') {
+for (let i = 0; i < 6; i++) beep(i % 2 === 0 ? 960 : 640, t + i * 0.28, 0.24);
+} else {
+beep(740, t, 0.3);
+beep(740, t + 0.45, 0.3);
+}
+}
+
+function refreshToggleButton() {
+const btn = document.getElementById('alertToggle');
+if (!btn) return;
+btn.classList.toggle('on', soundOn);
+btn.textContent = soundOn ? 'Sound alerts: on (tap to turn off)' : 'Sound alerts: off (tap to enable)';
+}
+
+function setupAlertToggle() {
+const btn = document.getElementById('alertToggle');
+if (!btn) return;
+if (soundOn) {
+audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+refreshToggleButton();
+btn.addEventListener('click', () => {
+soundOn = !soundOn;
+localStorage.setItem('soundAlerts', soundOn ? 'on' : 'off');
+if (soundOn) {
+if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+audioCtx.resume();
+playAlertSound('severe');
+}
+refreshToggleButton();
+});
+// Any click on the page also unlocks audio if it was saved as on
+document.addEventListener('click', () => {
+if (soundOn) {
+if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+}, { once: false });
+}
+
 async function loadAlerts() {
 try {
 const zones = ["WIC081","WIC033","WIC063","WIC121","WIC123","WIC059"];
@@ -395,6 +504,23 @@ const severe = /warning/i.test(p.event);
 return `<div class="alert${severe ? ' severe' : ''}"><strong>${p.event}</strong><span>${p.headline}</span></div>`;
 }).join('');
 }
+
+// Sound only for NEW tornado / severe thunderstorm warnings (not on first load)
+let newTornado = false;
+let newSevere = false;
+seen.forEach((a, id) => {
+if (!knownAlertIds.has(id)) {
+const ev = a.properties.event || '';
+if (/^tornado warning$/i.test(ev)) newTornado = true;
+else if (/^severe thunderstorm warning$/i.test(ev)) newSevere = true;
+knownAlertIds.add(id);
+}
+});
+if (!firstAlertLoad) {
+if (newTornado) playAlertSound('tornado');
+else if (newSevere) playAlertSound('severe');
+}
+firstAlertLoad = false;
 } catch (err) {
 document.getElementById('alerts').innerText = "Couldn't load alerts.";
 }
@@ -457,37 +583,59 @@ box.innerText = "Couldn't load storm reports.";
 }
 }
 
-async function loadRadarMap() {
+let rainLayer = null;
+let radarMapObj = null;
+
+function loadRadarMap() {
 try {
-const map = L.map('radarMap', { zoomControl: true }).setView([LAT, LON], 7);
+radarMapObj = L.map('radarMap', { zoomControl: true }).setView([LAT, LON], 7);
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
 attribution: 'Esri, HERE, Garmin, FAO, NOAA, USGS',
 maxZoom: 16
-}).addTo(map);
-
+}).addTo(radarMapObj);
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
 maxZoom: 16
-}).addTo(map);
-
-const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-const data = await res.json();
-const frames = data.radar.past;
-const latestFrame = frames[frames.length - 1];
-
-L.tileLayer(`https://tilecache.rainviewer.com${latestFrame.path}/256/{z}/{x}/{y}/2/1_1.png`, {
-opacity: 0.7
-}).addTo(map);
+}).addTo(radarMapObj);
 } catch (err) {
 document.getElementById('radarMap').innerText = "Couldn't load radar map.";
 }
 }
 
+async function refreshRadarLayer() {
+if (!radarMapObj) return;
+try {
+const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+const data = await res.json();
+const frames = data.radar.past;
+const latestFrame = frames[frames.length - 1];
+const newLayer = L.tileLayer(`https://tilecache.rainviewer.com${latestFrame.path}/256/{z}/{x}/{y}/2/1_1.png`, { opacity: 0.7 });
+newLayer.addTo(radarMapObj);
+if (rainLayer) radarMapObj.removeLayer(rainLayer);
+rainLayer = newLayer;
+} catch (err) {
+// keep the previous radar layer if the refresh fails
+}
+}
+
+function stamp() {
+const el = document.getElementById('lastUpdated');
+if (el) el.textContent = '(last: ' + new Date().toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' }) + ')';
+}
+
+function refreshAll() {
 loadCurrent();
 loadSkyInfo();
 loadWeather();
 loadAlerts();
 loadStormReports();
+refreshRadarLayer();
+stamp();
+}
+
+setupAlertToggle();
 loadRadarMap();
+refreshAll();
+setInterval(refreshAll, 300000);
 </script>
 
 </body>
