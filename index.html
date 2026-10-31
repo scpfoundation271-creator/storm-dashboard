@@ -206,6 +206,17 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 .hs-state { width: 34px; font-weight: 600; }
 .hs-bar { height: 10px; border-radius: 5px; background: linear-gradient(90deg, var(--cyan), var(--storm-purple)); }
 .hs-count { color: var(--text-dim); font-size: 0.9rem; white-space: nowrap; }
+
+.loc-form { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.loc-form input { flex: 1 1 220px; min-width: 0; padding: 10px 12px; font-family: inherit; font-size: 1rem; color: var(--text); background: rgba(11,14,20,0.55); border: 1px solid var(--border); border-radius: 8px; }
+.loc-form input:focus-visible { outline: 3px solid var(--amber); outline-offset: 1px; }
+.loc-form button { padding: 10px 14px; font-family: inherit; font-size: 0.95rem; font-weight: 600; color: var(--bg-base); background: var(--cyan); border: none; border-radius: 8px; cursor: pointer; }
+.loc-form button#locGeo, .loc-form button#locReset { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.loc-form button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+.loc-status { margin: 10px 0 0; font-size: 0.95rem; color: #c3cbe0; }
+.loc-results { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.loc-results button { text-align: left; padding: 9px 12px; font-family: inherit; font-size: 0.95rem; color: var(--text); background: rgba(11,14,20,0.55); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
+.loc-results button:hover { border-color: var(--cyan); }
 </style>
 </head>
 <body>
@@ -214,6 +225,14 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 <div class="header-inner">
 <h1>Ollie's Storm Dashboard</h1>
 <p class="updated">Updates every 5 minutes <span id="lastUpdated"></span></p>
+<form id="locForm" class="loc-form" autocomplete="off">
+<input id="locInput" type="text" placeholder="Search a city or zip code" aria-label="Search a city or zip code">
+<button type="submit">Search</button>
+<button type="button" id="locGeo">Use my location</button>
+<button type="button" id="locReset">Reset</button>
+</form>
+<p id="locStatus" class="loc-status">Showing: Monroe County, WI</p>
+<div id="locResults" class="loc-results"></div>
 </div>
 </header>
 
@@ -280,7 +299,7 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 <h2>Live radar</h2>
 <div class="card-body">
 <div id="radarMap"></div>
-<a class="link-btn" href="https://radar.weather.gov/station/arx/standard" target="_blank" rel="noopener">Open full NWS radar</a>
+<a class="link-btn" id="nwsRadarLink" href="https://radar.weather.gov/" target="_blank" rel="noopener">Open full NWS radar</a>
 </div>
 </section>
 
@@ -320,14 +339,17 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const LAT = 43.9;
-const LON = -90.65;
+const DEFAULT_LOC = { name: 'Monroe County, WI', lat: 43.9, lon: -90.65, tz: 'America/Chicago' };
+let LAT = DEFAULT_LOC.lat;
+let LON = DEFAULT_LOC.lon;
+let TZ = DEFAULT_LOC.tz;
+let LOC_NAME = DEFAULT_LOC.name;
 const CAPE_THRESHOLD = 1500;
 const SHEAR_THRESHOLD = 15;
 
 async function loadCurrent() {
 try {
-const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,dew_point_2m,wind_speed_10m,wind_direction_10m,precipitation&hourly=pressure_msl&past_hours=4&forecast_hours=1&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago`;
+const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,dew_point_2m,wind_speed_10m,wind_direction_10m,precipitation&hourly=pressure_msl&past_hours=4&forecast_hours=1&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=${encodeURIComponent(TZ)}`;
 const res = await fetch(url);
 const data = await res.json();
 const c = data.current;
@@ -401,8 +423,8 @@ try {
 const url = `https://api.sunrise-sunset.org/json?lat=${LAT}&lng=${LON}&formatted=0`;
 const res = await fetch(url);
 const data = await res.json();
-const sunrise = new Date(data.results.sunrise).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
-const sunset = new Date(data.results.sunset).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
+const sunrise = new Date(data.results.sunrise).toLocaleTimeString('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit' });
+const sunset = new Date(data.results.sunset).toLocaleTimeString('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit' });
 
 const phaseFraction = getMoonPhaseFraction();
 const moonPhase = getMoonPhaseName(phaseFraction);
@@ -458,7 +480,7 @@ moonEl.innerHTML =
 
 async function loadWeather() {
 try {
-const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=cape,wind_speed_10m,wind_speed_80m&forecast_days=1&timezone=America%2FChicago`;
+const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=cape,wind_speed_10m,wind_speed_80m&forecast_days=1&timezone=${encodeURIComponent(TZ)}`;
 const res = await fetch(url);
 const data = await res.json();
 const hourly = data.hourly;
@@ -549,13 +571,10 @@ if (audioCtx.state === 'suspended') audioCtx.resume();
 
 async function loadAlerts() {
 try {
-const zones = ["WIC081","WIC033","WIC063","WIC121","WIC123","WIC059"];
 const seen = new Map();
-for (const zone of zones) {
-const res = await fetch(`https://api.weather.gov/alerts/active?zone=${zone}`);
+const res = await fetch(`https://api.weather.gov/alerts/active?point=${LAT.toFixed(4)},${LON.toFixed(4)}`);
 const data = await res.json();
 if (data.features) data.features.forEach(f => seen.set(f.id, f));
-}
 const box = document.getElementById('alerts');
 if (seen.size === 0) {
 box.innerHTML = '<span class="no-alerts">No active alerts right now.</span>';
@@ -591,15 +610,9 @@ document.getElementById('alerts').innerText = "Couldn't load alerts.";
 async function loadWatches() {
 const banner = document.getElementById('watchBanner');
 try {
-const res = await fetch('https://api.weather.gov/alerts/active?event=Tornado%20Watch,Severe%20Thunderstorm%20Watch');
+const res = await fetch(`https://api.weather.gov/alerts/active?point=${LAT.toFixed(4)},${LON.toFixed(4)}`);
 const data = await res.json();
-const feats = data.features || [];
-const ours = ["WIC081","WIC033","WIC063","WIC121","WIC123","WIC059"];
-const mine = feats.filter(f => {
-const ugc = (f.properties.geocode && f.properties.geocode.UGC) || [];
-return ugc.some(code => ours.includes(code)) ||
-(f.properties.affectedZones || []).some(z => ours.some(o => z.endsWith('/' + o)));
-});
+const mine = (data.features || []).filter(f => /^(tornado|severe thunderstorm) watch$/i.test(f.properties.event || ''));
 if (mine.length > 0) {
 const hasTor = mine.some(f => /tornado watch/i.test(f.properties.event));
 banner.className = 'watch-banner show' + (hasTor ? ' tornado' : '');
@@ -665,7 +678,7 @@ let d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDat
 if (d.getTime() - now.getTime() > 3600000) {
 d = new Date(d.getTime() - 86400000);
 }
-return d.toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
+return d.toLocaleTimeString('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit' });
 }
 
 function buildGroup(className, label, rows, measureFn) {
@@ -743,9 +756,84 @@ img.style.display = 'none';
 img.src = candidates[0] + '?t=' + stamp;
 }
 
+function saveLocation() {
+try { localStorage.setItem('dashLocation', JSON.stringify({ name: LOC_NAME, lat: LAT, lon: LON, tz: TZ })); } catch (e) {}
+}
+
+function loadSavedLocation() {
+try {
+const s = JSON.parse(localStorage.getItem('dashLocation') || 'null');
+if (s && typeof s.lat === 'number' && typeof s.lon === 'number') {
+LAT = s.lat; LON = s.lon; TZ = s.tz || 'America/Chicago'; LOC_NAME = s.name || 'Saved location';
+}
+} catch (e) {}
+}
+
+function setLocationStatus() {
+const el = document.getElementById('locStatus');
+if (el) el.textContent = 'Showing: ' + LOC_NAME;
+const t = document.querySelector('h1');
+if (t) t.textContent = LOC_NAME === DEFAULT_LOC.name ? "Ollie's Storm Dashboard" : "Storm Dashboard \u2013 " + LOC_NAME;
+document.title = t ? t.textContent : document.title;
+}
+
+function applyLocation(loc) {
+LAT = loc.lat; LON = loc.lon; TZ = loc.tz || 'UTC'; LOC_NAME = loc.name;
+saveLocation();
+setLocationStatus();
+document.getElementById('locResults').innerHTML = '';
+if (radarMapObj) radarMapObj.setView([LAT, LON], 7);
+knownAlertIds.clear();
+firstAlertLoad = true;
+refreshAll();
+}
+
+async function searchPlace(query) {
+const box = document.getElementById('locResults');
+box.innerHTML = '';
+const q = query.trim();
+if (q.length < 2) return;
+try {
+const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=en&format=json`;
+const res = await fetch(url);
+const data = await res.json();
+const results = (data.results || []).filter(r => r.country_code === 'US');
+if (results.length === 0) {
+box.innerHTML = '<span class="dim">No US matches. Try a city name like "Omaha" or "Omaha, Nebraska".</span>';
+return;
+}
+results.forEach(r => {
+const label = [r.name, r.admin1, r.admin2].filter(Boolean).join(', ');
+const b = document.createElement('button');
+b.type = 'button';
+b.textContent = label;
+b.addEventListener('click', () => applyLocation({ name: label, lat: r.latitude, lon: r.longitude, tz: r.timezone }));
+box.appendChild(b);
+});
+} catch (e) {
+box.innerHTML = '<span class="dim">Search is unavailable right now. Try again in a moment.</span>';
+}
+}
+
+function setupLocationPicker() {
+const form = document.getElementById('locForm');
+if (!form) return;
+form.addEventListener('submit', e => { e.preventDefault(); searchPlace(document.getElementById('locInput').value); });
+document.getElementById('locReset').addEventListener('click', () => { applyLocation(DEFAULT_LOC); document.getElementById('locInput').value = ''; });
+document.getElementById('locGeo').addEventListener('click', () => {
+if (!navigator.geolocation) { document.getElementById('locStatus').textContent = 'Your browser cannot share location.'; return; }
+document.getElementById('locStatus').textContent = 'Finding your location...';
+navigator.geolocation.getCurrentPosition(
+pos => applyLocation({ name: 'My location', lat: pos.coords.latitude, lon: pos.coords.longitude, tz: Intl.DateTimeFormat().resolvedOptions().timeZone }),
+() => { document.getElementById('locStatus').textContent = 'Could not get your location. Search by city instead.'; },
+{ timeout: 10000 }
+);
+});
+}
+
 function stamp() {
 const el = document.getElementById('lastUpdated');
-if (el) el.textContent = '(last: ' + new Date().toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' }) + ')';
+if (el) el.textContent = '(last: ' + new Date().toLocaleTimeString('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit' }) + ')';
 }
 
 function refreshAll() {
@@ -760,6 +848,9 @@ loadOutlookImage();
 stamp();
 }
 
+loadSavedLocation();
+setLocationStatus();
+setupLocationPicker();
 setupAlertToggle();
 loadRadarMap();
 refreshAll();
