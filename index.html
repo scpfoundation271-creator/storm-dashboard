@@ -177,10 +177,10 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 #windDirLabel { text-align: center; color: var(--text-dim); }
 
 .alert-toggle {
-  margin-top: 14px;
-  padding: 9px 16px;
+  margin: 4px 0;
+  padding: 8px 14px;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--text);
   background: transparent;
@@ -255,6 +255,13 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 </div>
 </section>
 
+<section class="card">
+<h2>Alert sound</h2>
+<div class="card-body">
+<button id="alertToggle" class="alert-toggle" type="button">Sound alerts: off (tap to enable)</button>
+</div>
+</section>
+
 <section class="card wide">
 <h2>Live radar</h2>
 <div class="card-body">
@@ -267,7 +274,6 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 <h2>Active alerts</h2>
 <div class="card-body">
 <div id="alerts">Loading alerts...</div>
-<button id="alertToggle" class="alert-toggle" type="button">Sound alerts: off (tap to enable)</button>
 </div>
 </section>
 
