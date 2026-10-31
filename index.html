@@ -217,6 +217,9 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 .loc-results { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 .loc-results button { text-align: left; padding: 9px 12px; font-family: inherit; font-size: 0.95rem; color: var(--text); background: rgba(11,14,20,0.55); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
 .loc-results button:hover { border-color: var(--cyan); }
+
+.ingredients { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.ingredients p { margin: 0 0 4px; }
 </style>
 </head>
 <body>
@@ -244,9 +247,6 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 <h2>Current conditions</h2>
 <div class="card-body">
 <p id="currentOutput" class="readout">Loading current conditions...</p>
-<div class="pressure-row readout"><span id="pressureText">Pressure: loading...</span><span id="pressureArrow" class="pressure-arrow steady"></span></div>
-<p id="dewPointText" class="readout">Dew point: loading...</p>
-<p id="cloudBaseText" class="readout">Cloud base: loading...</p>
 <div id="compass">
 <div id="compassArrow"></div>
 <span class="compass-label label-n">N</span>
@@ -278,6 +278,11 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 <h2>Chase potential</h2>
 <div class="card-body">
 <p id="output" class="readout">Loading data...</p>
+<div class="ingredients">
+<div class="pressure-row readout"><span id="pressureText">Pressure: loading...</span><span id="pressureArrow" class="pressure-arrow steady"></span></div>
+<p id="dewPointText" class="readout">Dew point: loading...</p>
+<p id="cloudBaseText" class="readout">Cloud base: loading...</p>
+</div>
 </div>
 </section>
 
@@ -389,11 +394,11 @@ const el = document.getElementById('dewPointText');
 if (dp === null || dp === undefined) { el.textContent = 'Dew point: unavailable'; return; }
 const d = Math.round(dp);
 let label = 'dry';
-if (d >= 70) label = 'very humid, strong storm fuel';
-else if (d >= 65) label = 'humid, good storm fuel';
+if (d >= 70) label = 'very humid, strong fuel';
+else if (d >= 65) label = 'humid, good fuel';
 else if (d >= 55) label = 'moderate moisture';
 else if (d >= 45) label = 'comfortable';
-el.textContent = `Dew point: ${d} degrees F (${label})`;
+el.textContent = `Dew point: ${d}\u00B0F (${label})`;
 }
 
 function updatePressure(hourly) {
