@@ -195,6 +195,7 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 .pressure-arrow.rising { color: var(--green); }
 .pressure-arrow.falling { color: var(--red); }
 .pressure-arrow.steady { color: var(--text-dim); }
+.outlook-img { display: block; width: 100%; max-width: 815px; height: auto; margin: 0 auto 14px; border-radius: 8px; background: #0e131c; }
 </style>
 </head>
 <body>
@@ -214,6 +215,7 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 <div class="card-body">
 <p id="currentOutput" class="readout">Loading current conditions...</p>
 <div class="pressure-row readout"><span id="pressureText">Pressure: loading...</span><span id="pressureArrow" class="pressure-arrow steady"></span></div>
+<p id="dewPointText" class="readout">Dew point: loading...</p>
 <div id="compass">
 <div id="compassArrow"></div>
 <span class="compass-label label-n">N</span>
@@ -271,6 +273,15 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 </section>
 
 <section class="card wide">
+<h2>SPC convective outlook</h2>
+<div class="card-body">
+<img id="outlookImg" class="outlook-img" alt="SPC Day 1 convective outlook map" src="https://www.spc.noaa.gov/products/outlook/day1otlk.gif" onerror="this.style.display='none'">
+<a class="link-btn" href="https://www.spc.noaa.gov/products/outlook/day1otlk.html" target="_blank" rel="noopener">Open full Day 1 outlook</a>
+<a class="link-btn" href="https://www.spc.noaa.gov/products/outlook/day2otlk.html" target="_blank" rel="noopener">Day 2 outlook</a>
+</div>
+</section>
+
+<section class="card wide">
 <h2>Active alerts</h2>
 <div class="card-body">
 <div id="alerts">Loading alerts...</div>
@@ -297,7 +308,7 @@ const SHEAR_THRESHOLD = 15;
 
 async function loadCurrent() {
 try {
-const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,wind_speed_10m,wind_direction_10m,precipitation&hourly=pressure_msl&past_hours=4&forecast_hours=1&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago`;
+const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,dew_point_2m,wind_speed_10m,wind_direction_10m,precipitation&hourly=pressure_msl&past_hours=4&forecast_hours=1&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago`;
 const res = await fetch(url);
 const data = await res.json();
 const c = data.current;
@@ -313,9 +324,22 @@ const dirName = dirs[Math.round(dir / 22.5) % 16];
 document.getElementById('windDirLabel').innerText = `Wind from ${dirName} (${Math.round(dir)} degrees)`;
 
 updatePressure(data.hourly);
+updateDewPoint(c.dew_point_2m);
 } catch (err) {
 document.getElementById('currentOutput').innerText = "Couldn't load current conditions.";
 }
+}
+
+function updateDewPoint(dp) {
+const el = document.getElementById('dewPointText');
+if (dp === null || dp === undefined) { el.textContent = 'Dew point: unavailable'; return; }
+const d = Math.round(dp);
+let label = 'dry';
+if (d >= 70) label = 'very humid, strong storm fuel';
+else if (d >= 65) label = 'humid, good storm fuel';
+else if (d >= 55) label = 'moderate moisture';
+else if (d >= 45) label = 'comfortable';
+el.textContent = `Dew point: ${d} degrees F (${label})`;
 }
 
 function updatePressure(hourly) {
