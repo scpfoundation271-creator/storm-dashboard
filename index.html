@@ -220,6 +220,14 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 
 .ingredients { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
 .ingredients p { margin: 0 0 4px; }
+
+.strip-title { margin: 0 0 8px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 1.05rem; letter-spacing: 0.02em; color: var(--text-dim); }
+.hour-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; }
+.hour-cell { background: rgba(11,14,20,0.45); border: 1px solid var(--border); border-radius: 8px; padding: 8px 6px; text-align: center; font-size: 0.85rem; line-height: 1.35; }
+.hour-cell .hr-time { color: var(--text-dim); font-size: 0.8rem; }
+.hour-cell .hr-temp { font-weight: 600; font-size: 1rem; }
+.hour-cell.storm { border-color: var(--red); background: rgba(232,69,60,0.12); }
+.hour-cell.wet { border-color: var(--cyan); }
 </style>
 </head>
 <body>
@@ -270,6 +278,10 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 <div class="moon-caption">
 <p id="skyOutput" class="readout">Loading sky info...</p>
 </div>
+</div>
+<div class="ingredients">
+<p class="strip-title">Next 12 hours</p>
+<div id="hourStrip" class="hour-strip">Loading forecast...</div>
 </div>
 </div>
 </section>
@@ -481,6 +493,28 @@ moonEl.innerHTML =
 `<circle cx="${r}" cy="${r}" r="${r - 1}" fill="#1a2232" stroke="#2a3341" stroke-width="1"/>` +
 (full ? `<circle cx="${r}" cy="${r}" r="${r - 1}" fill="#f4f1e6"/>` : lit) +
 `</svg>`;
+}
+
+async function loadHourStrip() {
+const box = document.getElementById('hourStrip');
+try {
+const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=temperature_2m,precipitation_probability,cape&forecast_hours=12&temperature_unit=fahrenheit&timezone=${encodeURIComponent(TZ)}`;
+const res = await fetch(url);
+const data = await res.json();
+const h = data.hourly;
+if (!h || !h.time || h.time.length === 0) throw new Error('no data');
+box.innerHTML = h.time.map((t, i) => {
+const label = new Date(t).toLocaleTimeString('en-US', { hour: 'numeric' });
+const temp = Math.round(h.temperature_2m[i]);
+const pop = h.precipitation_probability ? h.precipitation_probability[i] : null;
+const cape = Math.round(h.cape[i] || 0);
+const storm = cape >= CAPE_THRESHOLD;
+const wet = pop !== null && pop >= 50;
+return `<div class="hour-cell${storm ? ' storm' : (wet ? ' wet' : '')}"><div class="hr-time">${label}</div><div class="hr-temp">${temp}\u00B0</div><div>${pop === null ? '--' : pop + '%'} rain</div><div>${cape} CAPE</div></div>`;
+}).join('');
+} catch (e) {
+box.textContent = "Couldn't load the forecast.";
+}
 }
 
 async function loadWeather() {
@@ -820,6 +854,19 @@ box.innerHTML = '<span class="dim">Search is unavailable right now. Try again in
 }
 }
 
+async function lookupPlaceName(lat, lon) {
+try {
+const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+const d = await res.json();
+const place = d.city || d.locality || '';
+const state = d.principalSubdivision || '';
+const label = [place, state].filter(Boolean).join(', ');
+return label || 'My location';
+} catch (e) {
+return 'My location';
+}
+}
+
 function setupLocationPicker() {
 const form = document.getElementById('locForm');
 if (!form) return;
@@ -829,7 +876,7 @@ document.getElementById('locGeo').addEventListener('click', () => {
 if (!navigator.geolocation) { document.getElementById('locStatus').textContent = 'Your browser cannot share location.'; return; }
 document.getElementById('locStatus').textContent = 'Finding your location...';
 navigator.geolocation.getCurrentPosition(
-pos => applyLocation({ name: 'My location', lat: pos.coords.latitude, lon: pos.coords.longitude, tz: Intl.DateTimeFormat().resolvedOptions().timeZone }),
+async pos => { const nm = await lookupPlaceName(pos.coords.latitude, pos.coords.longitude); applyLocation({ name: nm, lat: pos.coords.latitude, lon: pos.coords.longitude, tz: Intl.DateTimeFormat().resolvedOptions().timeZone }); },
 () => { document.getElementById('locStatus').textContent = 'Could not get your location. Search by city instead.'; },
 { timeout: 10000 }
 );
@@ -845,6 +892,7 @@ function refreshAll() {
 loadCurrent();
 loadSkyInfo();
 loadWeather();
+loadHourStrip();
 loadAlerts();
 loadWatches();
 loadStormReports();
