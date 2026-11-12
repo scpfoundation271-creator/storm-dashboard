@@ -53,6 +53,7 @@ header::before {
   opacity: 0;
   animation: flash 9s infinite;
   pointer-events: none;
+  z-index: 2;
 }
 header::after {
   content: '';
@@ -61,6 +62,7 @@ header::after {
   height: 3px;
   background: linear-gradient(90deg, transparent, var(--amber), transparent);
   opacity: 0.8;
+  z-index: 2;
 }
 @keyframes drift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
 @keyframes flash {
@@ -70,7 +72,26 @@ header::after {
   93.5% { opacity: 0.7; }
   96% { opacity: 0; }
 }
-.header-inner { position: relative; max-width: 1100px; margin: 0 auto; }
+
+/* Aurora glows and particle canvas behind the header content */
+.aurora { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.aurora span {
+  position: absolute;
+  width: 420px; height: 420px;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.45;
+  mix-blend-mode: screen;
+}
+.aurora span:nth-child(1) { background: #2e8b57; top: -200px; left: -80px; animation: floatA 14s ease-in-out infinite; }
+.aurora span:nth-child(2) { background: #6fd9a0; top: -240px; left: 38%; opacity: 0.28; animation: floatB 18s ease-in-out infinite; }
+.aurora span:nth-child(3) { background: #ff7518; top: -280px; right: -120px; opacity: 0.16; animation: floatC 20s ease-in-out infinite; }
+@keyframes floatA { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(140px, 60px) scale(1.2); } }
+@keyframes floatB { 0%, 100% { transform: translate(0, 0) scale(1.1); } 50% { transform: translate(-160px, 80px) scale(0.9); } }
+@keyframes floatC { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-100px, 90px) scale(1.25); } }
+#particles { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+
+.header-inner { position: relative; z-index: 3; max-width: 1100px; margin: 0 auto; }
 h1 {
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 700;
@@ -126,13 +147,19 @@ main { padding: 28px 16px 56px; }
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 8px 28px rgba(0,0,0,0.35);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, opacity 0.7s ease;
 }
 .card:hover {
   transform: translateY(-4px);
   border-color: rgba(111,217,160,0.55);
   box-shadow: 0 14px 36px rgba(0,0,0,0.45), 0 0 26px var(--glow);
 }
+
+/* Scroll reveal: only hidden when JavaScript is running, so the page never ends up blank */
+.js .reveal { opacity: 0; transform: translateY(34px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease; }
+.js .reveal.in { opacity: 1; transform: translateY(0); }
+.js .reveal.in:hover { transform: translateY(-4px); }
+
 .card.wide { grid-column: 1 / -1; }
 .card h2 {
   margin: 0;
@@ -167,6 +194,24 @@ main { padding: 28px 16px 56px; }
 }
 .elevated { color: var(--red); background: rgba(255,77,61,0.12); }
 .low { color: var(--green); background: rgba(111,217,160,0.10); }
+
+/* Rolling text: two stacked copies of the label slide up on hover */
+.roll {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  vertical-align: bottom;
+  line-height: 1.3;
+  height: 1.3em;
+}
+.roll > span {
+  display: block;
+  transition: transform 0.38s cubic-bezier(0.7, 0, 0.2, 1);
+}
+.roll > span:last-child { position: absolute; left: 0; top: 100%; }
+a:hover > .roll > span, a:focus-visible > .roll > span,
+button:hover > .roll > span, button:focus-visible > .roll > span { transform: translateY(-100%); }
+
 a.link-btn {
   display: inline-block;
   margin: 4px 6px 4px 0;
@@ -233,8 +278,10 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 .no-reports { color: var(--text-dim); }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
 @media (prefers-reduced-motion: reduce) {
-  .alert.severe, header, header::before, #radarMap, .status-pill .dot { animation: none; }
-  .card, a.link-btn { transition: none; }
+  .alert.severe, header, header::before, #radarMap, .status-pill .dot, .aurora span { animation: none; }
+  .card, a.link-btn, .roll > span { transition: none; }
+  .js .reveal { opacity: 1; transform: none; }
+  #particles { display: none; }
 }
 #compass {
   width: 210px; height: 210px;
@@ -327,15 +374,17 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 </head><body>
 
 <header>
+<div class="aurora"><span></span><span></span><span></span></div>
+<canvas id="particles"></canvas>
 <div class="header-inner">
 <h1>Ollie's Storm Dashboard</h1>
 <p class="updated">Updates every 5 minutes <span id="lastUpdated"></span></p>
 <div id="statusPill" class="status-pill"><span class="dot"></span><span id="statusText">Checking the sky...</span></div>
 <form id="locForm" class="loc-form" autocomplete="off">
 <input id="locInput" type="text" placeholder="Search a city or zip code" aria-label="Search a city or zip code">
-<button type="submit">Search</button>
-<button type="button" id="locGeo">Use my location</button>
-<button type="button" id="locReset">Reset</button>
+<button type="submit"><span class="roll"><span>Search</span><span aria-hidden="true">Search</span></span></button>
+<button type="button" id="locGeo"><span class="roll"><span>Use my location</span><span aria-hidden="true">Use my location</span></span></button>
+<button type="button" id="locReset"><span class="roll"><span>Reset</span><span aria-hidden="true">Reset</span></span></button>
 </form>
 <p id="locStatus" class="loc-status">Showing: Monroe County, WI</p>
 <div id="locResults" class="loc-results"></div>
@@ -346,7 +395,7 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 <div id="watchBanner" class="watch-banner"></div>
 <div class="grid">
 
-<section class="card">
+<section class="card reveal">
 <h2>Current conditions</h2>
 <div class="card-body">
 <p id="currentOutput" class="readout">Loading current conditions...</p>
@@ -365,7 +414,7 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 </div>
 </section>
 
-<section class="card">
+<section class="card reveal">
 <h2>Sky info</h2>
 <div class="card-body">
 <div class="moon-wrap">
@@ -381,7 +430,7 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 </div>
 </section>
 
-<section class="card">
+<section class="card reveal">
 <h2>Chase potential</h2>
 <div class="card-body">
 <p id="output" class="readout">Loading data...</p>
@@ -393,53 +442,53 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 </div>
 </section>
 
-<section class="card">
+<section class="card reveal">
 <h2>Lightning</h2>
 <div class="card-body">
-<a class="link-btn" href="https://www.lightningmaps.org/" target="_blank" rel="noopener">Open live lightning map</a>
+<a class="link-btn" href="https://www.lightningmaps.org/" target="_blank" rel="noopener"><span class="roll"><span>Open live lightning map</span><span aria-hidden="true">Open live lightning map</span></span></a>
 </div>
 </section>
 
-<section class="card">
+<section class="card reveal">
 <h2>Alert sound</h2>
 <div class="card-body">
 <button id="alertToggle" class="alert-toggle" type="button">Sound alerts: off (tap to enable)</button>
 </div>
 </section>
 
-<section class="card wide">
+<section class="card wide reveal">
 <h2>Live radar</h2>
 <div class="card-body">
 <div id="radarMap"></div>
-<a class="link-btn" id="nwsRadarLink" href="https://radar.weather.gov/" target="_blank" rel="noopener">Open full NWS radar</a>
+<a class="link-btn" id="nwsRadarLink" href="https://radar.weather.gov/" target="_blank" rel="noopener"><span class="roll"><span>Open full NWS radar</span><span aria-hidden="true">Open full NWS radar</span></span></a>
 </div>
 </section>
 
-<section class="card wide">
+<section class="card wide reveal">
 <h2>SPC convective outlook</h2>
 <div class="card-body">
 <img id="outlookImg" class="outlook-img" alt="SPC Day 1 convective outlook map" src="https://www.spc.noaa.gov/products/outlook/day1otlk.png">
-<a class="link-btn" href="https://www.spc.noaa.gov/products/outlook/day1otlk.html" target="_blank" rel="noopener">Open full Day 1 outlook</a>
-<a class="link-btn" href="https://www.spc.noaa.gov/products/outlook/day2otlk.html" target="_blank" rel="noopener">Day 2 outlook</a>
+<a class="link-btn" href="https://www.spc.noaa.gov/products/outlook/day1otlk.html" target="_blank" rel="noopener"><span class="roll"><span>Open full Day 1 outlook</span><span aria-hidden="true">Open full Day 1 outlook</span></span></a>
+<a class="link-btn" href="https://www.spc.noaa.gov/products/outlook/day2otlk.html" target="_blank" rel="noopener"><span class="roll"><span>Day 2 outlook</span><span aria-hidden="true">Day 2 outlook</span></span></a>
 </div>
 </section>
 
-<section class="card wide">
+<section class="card wide reveal">
 <h2>Active alerts</h2>
 <div class="card-body">
 <div id="alerts">Loading alerts...</div>
 </div>
 </section>
 
-<section class="card wide">
+<section class="card wide reveal">
 <h2>Storm reports</h2>
 <div class="card-body">
 <div id="stormReports">Loading today's storm reports...</div>
-<a class="link-btn" href="https://www.spc.noaa.gov/climo/reports/today.html" target="_blank" rel="noopener">Open full SPC report page</a>
+<a class="link-btn" href="https://www.spc.noaa.gov/climo/reports/today.html" target="_blank" rel="noopener"><span class="roll"><span>Open full SPC report page</span><span aria-hidden="true">Open full SPC report page</span></span></a>
 </div>
 </section>
 
-<section class="card wide">
+<section class="card wide reveal">
 <h2>Nationwide hot spots</h2>
 <div class="card-body">
 <div id="hotspots">Loading nationwide report counts...</div>
@@ -450,6 +499,8 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 </main>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script>
+document.documentElement.classList.add('js');
+
 const DEFAULT_LOC = { name: 'Monroe County, WI', lat: 43.9, lon: -90.65, tz: 'America/Chicago' };
 let LAT = DEFAULT_LOC.lat;
 let LON = DEFAULT_LOC.lon;
@@ -457,6 +508,73 @@ let TZ = DEFAULT_LOC.tz;
 let LOC_NAME = DEFAULT_LOC.name;
 const CAPE_THRESHOLD = 1500;
 const SHEAR_THRESHOLD = 15;
+
+function setupReveal() {
+const cards = document.querySelectorAll('.reveal');
+if (!('IntersectionObserver' in window)) {
+cards.forEach(c => c.classList.add('in'));
+return;
+}
+const io = new IntersectionObserver((entries) => {
+entries.forEach(entry => {
+if (entry.isIntersecting) {
+entry.target.classList.add('in');
+io.unobserve(entry.target);
+}
+});
+}, { threshold: 0.12 });
+cards.forEach((c, i) => {
+c.style.transitionDelay = (i % 3) * 90 + 'ms';
+io.observe(c);
+});
+}
+
+function startParticles() {
+const canvas = document.getElementById('particles');
+if (!canvas) return;
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+const ctx = canvas.getContext('2d');
+let w = 0, h = 0;
+function resize() {
+const rect = canvas.parentElement.getBoundingClientRect();
+const dpr = window.devicePixelRatio || 1;
+w = rect.width; h = rect.height;
+canvas.width = w * dpr; canvas.height = h * dpr;
+ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resize();
+window.addEventListener('resize', resize);
+const COUNT = 46;
+const colors = ['111,217,160', '111,217,160', '46,139,87', '255,117,24'];
+const dots = Array.from({ length: COUNT }, () => ({
+x: Math.random() * 1200,
+y: Math.random() * 400,
+r: 0.8 + Math.random() * 2.2,
+speed: 0.12 + Math.random() * 0.4,
+drift: (Math.random() - 0.5) * 0.25,
+phase: Math.random() * Math.PI * 2,
+color: colors[Math.floor(Math.random() * colors.length)]
+}));
+function frame(t) {
+ctx.clearRect(0, 0, w, h);
+for (const d of dots) {
+d.y -= d.speed;
+d.x += d.drift + Math.sin(t / 1800 + d.phase) * 0.15;
+if (d.y < -10) { d.y = h + 10; d.x = Math.random() * w; }
+if (d.x < -10) d.x = w + 10;
+if (d.x > w + 10) d.x = -10;
+const a = 0.25 + 0.35 * Math.sin(t / 1200 + d.phase);
+ctx.beginPath();
+ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+ctx.fillStyle = `rgba(${d.color},${Math.max(0.08, a).toFixed(2)})`;
+ctx.shadowColor = `rgba(${d.color},0.8)`;
+ctx.shadowBlur = 8;
+ctx.fill();
+}
+requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+}
 
 function setStatusPill(elevated, maxCape, maxShear) {
 const pill = document.getElementById('statusPill');
@@ -1010,6 +1128,8 @@ loadSavedLocation();
 setLocationStatus();
 setupLocationPicker();
 setupAlertToggle();
+setupReveal();
+startParticles();
 loadRadarMap();
 refreshAll();
 setInterval(refreshAll, 300000);
