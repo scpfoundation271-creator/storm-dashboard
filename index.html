@@ -292,7 +292,8 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
 @media (prefers-reduced-motion: reduce) {
   .alert.severe, header, header::before, #radarMap, .status-pill .dot, .aurora span { animation: none; }
-  .card, a.link-btn, .roll > span { transition: none; }
+  .card, a.link-btn, .roll > span, .roll .ch, .hour-cell, .cape-meter i { transition: none; }
+  .hour-cell, .hour-cell.peak { animation: none; }
   .js .reveal { opacity: 1; transform: none; }
   #particles { display: none; }
 }
@@ -377,8 +378,63 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 
 .strip-title { margin: 0 0 8px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 1.05rem; letter-spacing: 0.02em; color: var(--text-dim); }
 .hour-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; }
-.hour-cell { background: rgba(5,10,7,0.5); border: 1px solid var(--border); border-radius: 10px; padding: 8px 6px; text-align: center; font-size: 0.85rem; line-height: 1.35; transition: border-color 0.2s ease; }
-.hour-cell:hover { border-color: var(--green); }
+.hour-cell {
+  position: relative;
+  overflow: hidden;
+  background: rgba(5,10,7,0.5);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 6px 12px;
+  text-align: center;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  animation: hourIn 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--n, 0) * 70ms);
+}
+.hour-cell:hover {
+  transform: translateY(-4px) rotate(-1.2deg) scale(1.04);
+  border-color: var(--green);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4), 0 0 18px var(--glow);
+}
+@keyframes hourIn {
+  from { opacity: 0; transform: translateY(18px) scale(0.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.cape-meter {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+}
+.cape-meter i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #2e8b57, #6fd9a0);
+  border-radius: 0 3px 3px 0;
+  transition: width 1s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: calc(var(--n, 0) * 70ms + 300ms);
+}
+.hour-cell.peak {
+  border-color: var(--amber);
+  animation: hourIn 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both, peakPulse 2.4s ease-in-out 1s infinite;
+  animation-delay: calc(var(--n, 0) * 70ms), 1s;
+}
+.hour-cell.peak .cape-meter i { background: linear-gradient(90deg, #6fd9a0, #ff7518); }
+.hour-cell.peak::after {
+  content: 'PEAK';
+  position: absolute;
+  top: 4px; right: 5px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--amber);
+}
+@keyframes peakPulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(255,117,24,0); }
+  50% { box-shadow: 0 0 18px rgba(255,117,24,0.55); }
+}
 .hour-cell .hr-time { color: var(--text-dim); font-size: 0.8rem; }
 .hour-cell .hr-temp { font-weight: 600; font-size: 1rem; }
 .hour-cell.storm { border-color: var(--red); background: rgba(255,77,61,0.12); }
@@ -762,15 +818,23 @@ const res = await fetch(url);
 const data = await res.json();
 const h = data.hourly;
 if (!h || !h.time || h.time.length === 0) throw new Error('no data');
+const capes = h.time.map((t, i) => Math.round(h.cape[i] || 0));
+const maxHourCape = Math.max(...capes);
+const peakIndex = maxHourCape > 0 ? capes.indexOf(maxHourCape) : -1;
 box.innerHTML = h.time.map((t, i) => {
 const label = new Date(t).toLocaleTimeString('en-US', { hour: 'numeric' });
 const temp = Math.round(h.temperature_2m[i]);
 const pop = h.precipitation_probability ? h.precipitation_probability[i] : null;
-const cape = Math.round(h.cape[i] || 0);
+const cape = capes[i];
 const storm = cape >= CAPE_THRESHOLD;
 const wet = pop !== null && pop >= 50;
-return `<div class="hour-cell${storm ? ' storm' : (wet ? ' wet' : '')}"><div class="hr-time">${label}</div><div class="hr-temp">${temp}\u00B0</div><div>${pop === null ? '--' : pop + '%'} rain</div><div>${cape} CAPE</div></div>`;
+const peak = i === peakIndex;
+const pct = Math.min(100, Math.max(cape > 0 ? 6 : 0, Math.round((cape / CAPE_THRESHOLD) * 100)));
+return `<div class="hour-cell${storm ? ' storm' : (wet ? ' wet' : '')}${peak ? ' peak' : ''}" style="--n:${i}"><div class="hr-time">${label}</div><div class="hr-temp">${temp}\u00B0</div><div>${pop === null ? '--' : pop + '%'} rain</div><div>${cape} CAPE</div><div class="cape-meter"><i data-w="${pct}"></i></div></div>`;
 }).join('');
+requestAnimationFrame(() => requestAnimationFrame(() => {
+box.querySelectorAll('.cape-meter i').forEach(el => { el.style.width = el.dataset.w + '%'; });
+}));
 } catch (e) {
 box.textContent = "Couldn't load the forecast.";
 }
