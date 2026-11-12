@@ -12,12 +12,12 @@
 :root {
   --bg-base: #08080a;
   --bg-panel: #131316;
-  --storm-blue: #2b1608;
-  --storm-purple: #7a3410;
+  --storm-blue: #0f2a1a;
+  --storm-purple: #1f5c3a;
   --text: #ece6dc;
   --text-dim: #9a9288;
-  --cyan: #b84a00;
-  --amber: #e8a04a;
+  --cyan: #2e8b57;
+  --amber: #ff7518;
   --red: #ff4d3d;
   --green: #6fd9a0;
   --border: #2c2a28;
@@ -68,7 +68,7 @@ main { padding: 24px 16px 48px; }
   font-weight: 600;
   font-size: 1.25rem;
   letter-spacing: 0.03em;
-  background: linear-gradient(120deg, rgba(43,22,8,0.85), rgba(122,52,16,0.85));
+  background: linear-gradient(120deg, rgba(15,42,26,0.85), rgba(31,92,58,0.85));
   border-bottom: 1px solid var(--border);
 }
 .card-body { padding: 18px; color: var(--text); }
@@ -97,17 +97,17 @@ a.link-btn {
   margin: 4px 6px 4px 0;
   padding: 11px 20px;
   background: var(--cyan);
-  color: #fff6ec;
+  color: #f2fff7;
   font-weight: 600;
   text-decoration: none;
   border-radius: 8px;
 }
-a.link-btn:hover { background: #9a3c00; }
+a.link-btn:hover { background: #236b43; }
 a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 #radarMap { height: 420px; width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 14px; }
 .alert {
   border-left: 4px solid var(--amber);
-  background: rgba(232,160,74,0.10);
+  background: rgba(255,117,24,0.10);
   padding: 10px 14px;
   border-radius: 6px;
   margin-bottom: 10px;
@@ -165,7 +165,7 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
   transform-origin: 50% 90%;
   transition: transform 0.5s ease;
 }
-.compass-label { position: absolute; font-size: 0.8rem; font-weight: 600; color: #d9b48f; }
+.compass-label { position: absolute; font-size: 0.8rem; font-weight: 600; color: #b8d4c0; }
 .label-n { top: -22px; left: 50%; transform: translateX(-50%); }
 .label-s { bottom: -22px; left: 50%; transform: translateX(-50%); }
 .label-e { right: -26px; top: 50%; transform: translateY(-50%); }
@@ -196,7 +196,7 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 .pressure-arrow.falling { color: var(--red); }
 .pressure-arrow.steady { color: var(--text-dim); }
 .outlook-img { display: block; width: 100%; max-width: 815px; height: auto; margin: 0 auto 14px; border-radius: 8px; background: #0c0c0e; }
-.watch-banner { display: none; max-width: 1100px; margin: 0 auto 20px; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--amber); background: rgba(232,160,74,0.12); font-weight: 600; }
+.watch-banner { display: none; max-width: 1100px; margin: 0 auto 20px; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--amber); background: rgba(255,117,24,0.12); font-weight: 600; }
 .watch-banner.show { display: block; }
 .watch-banner.tornado { border-color: var(--red); background: rgba(255,77,61,0.14); }
 .watch-banner span { display: block; font-weight: 400; color: var(--text-dim); font-size: 0.95rem; margin-top: 2px; }
@@ -210,7 +210,7 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 .loc-form { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .loc-form input { flex: 1 1 220px; min-width: 0; padding: 10px 12px; font-family: inherit; font-size: 1rem; color: var(--text); background: rgba(8,8,10,0.55); border: 1px solid var(--border); border-radius: 8px; }
 .loc-form input:focus-visible { outline: 3px solid var(--amber); outline-offset: 1px; }
-.loc-form button { padding: 10px 14px; font-family: inherit; font-size: 0.95rem; font-weight: 600; color: #fff6ec; background: var(--cyan); border: none; border-radius: 8px; cursor: pointer; }
+.loc-form button { padding: 10px 14px; font-family: inherit; font-size: 0.95rem; font-weight: 600; color: #f2fff7; background: var(--cyan); border: none; border-radius: 8px; cursor: pointer; }
 .loc-form button#locGeo, .loc-form button#locReset { background: transparent; color: var(--text); border: 1px solid var(--border); }
 .loc-form button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .loc-status { margin: 10px 0 0; font-size: 0.95rem; color: #d8cfc2; }
@@ -230,6 +230,8 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 .hour-cell.wet { border-color: var(--cyan); }
 </style>
 </head>
+That's part 1. Parts 2 and 3 follow below.
+Part 2 of 3: page body
 <body>
 
 <header>
@@ -355,6 +357,9 @@ a.link-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px;
 </main>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+That's part 2. Part 3 is the script, which has no colors in it.
+Part 3 of 3: script
+No colors live in the script, so this is your original JavaScript unchanged. Paste it right after part 2, then close the page.
 <script>
 const DEFAULT_LOC = { name: 'Monroe County, WI', lat: 43.9, lon: -90.65, tz: 'America/Chicago' };
 let LAT = DEFAULT_LOC.lat;
